@@ -66,7 +66,7 @@ if (empty($_SESSION["takeposterminal"])) {
 
 if ($setterminal > 0) {
 	$_SESSION["takeposterminal"] = $setterminal;
-	setcookie("takeposterminal", $setterminal, (time() + (86400 * 354)), '/', '', (empty($dolibarr_main_force_https) ? false : true), true); // Permanent takeposterminal var in a cookie
+	setcookie("takeposterminal", (string) $setterminal, (time() + (86400 * 354)), '/', '', (empty($dolibarr_main_force_https) ? false : true), true); // Permanent takeposterminal var in a cookie
 }
 
 if ($setcurrency != "") {
@@ -74,7 +74,6 @@ if ($setcurrency != "") {
 	// We will recalculate amount for foreign currency at next call of invoice.php when $_SESSION["takeposcustomercurrency"] differs from invoice->multicurrency_code.
 }
 
-$_SESSION["urlfrom"] = '/takepos/index.php';
 
 $langs->loadLangs(array("bills", "orders", "commercial", "cashdesk", "receiptprinter", "banks"));
 
@@ -600,6 +599,17 @@ function CloseBill() {
 	?>
 	invoiceid = $("#invoiceid").val();
 	console.log("Open popup to enter payment on invoiceid="+invoiceid);
+	<?php if (getDolGlobalInt("TAKEPOS_NO_GENERIC_THIRDPARTY")) { ?>
+		if ($("#idcustomer").val() == "") {
+			alert("<?php echo $langs->trans('TakePosCustomerMandatory'); ?>");
+			<?php if (getDolGlobalString('TAKEPOS_CHOOSE_CONTACT')) { ?>
+				Contact();
+			<?php } else { ?>
+				Customer();
+			<?php } ?>
+			return;
+		}
+	<?php }	?>
 	<?php
 	$alternative_payurl = getDolGlobalString('TAKEPOS_ALTERNATIVE_PAYMENT_SCREEN');
 	if (empty($alternative_payurl)) {
@@ -660,7 +670,9 @@ function New() {
 			$("#poslines").load("invoice.php?action=delete&token=<?php echo newToken(); ?>&place=" + place, function () {
 				//$('#poslines').scrollTop($('#poslines')[0].scrollHeight);
 			});
+
 			ClearSearch(false);
+			$("#idcustomer").val("");
 		}
 	});
 }
@@ -946,11 +958,11 @@ function OpenDrawer(){
 }
 
 function DolibarrOpenDrawer() {
-	console.log("DolibarrOpenDrawer call ajax url /takepos/ajax/ajax.php?action=opendrawer&token=<?php echo newToken();?>&term=<?php print urlencode($_SESSION["takeposterminal"]); ?>");
+	console.log("DolibarrOpenDrawer call ajax url /takepos/ajax/ajax.php?action=opendrawer&token=<?php echo newToken();?>&term=<?php print urlencode(empty($_SESSION["takeposterminal"]) ? '' : $_SESSION["takeposterminal"]); ?>");
 	$.ajax({
 		type: "GET",
 		data: { token: '<?php echo currentToken(); ?>' },
-		url: "<?php print DOL_URL_ROOT.'/takepos/ajax/ajax.php?action=opendrawer&token='.newToken().'&term='.urlencode($_SESSION["takeposterminal"]); ?>",
+		url: "<?php print DOL_URL_ROOT.'/takepos/ajax/ajax.php?action=opendrawer&token='.newToken().'&term='.urlencode(empty($_SESSION["takeposterminal"]) ? '' : $_SESSION["takeposterminal"]); ?>",
 	});
 }
 
@@ -1024,8 +1036,8 @@ $( document ).ready(function() {
 	LoadProducts(0);
 	Refresh();
 	<?php
-	//IF NO TERMINAL SELECTED
-	if ($_SESSION["takeposterminal"] == "") {
+	// IF NO TERMINAL SELECTED
+	if (empty($_SESSION["takeposterminal"]) || $_SESSION["takeposterminal"] == "") {
 		print "ModalBox('ModalTerminal');";
 	}
 
@@ -1107,7 +1119,10 @@ $( document ).ready(function() {
 </script>
 
 <?php
-$keyCodeForEnter = getDolGlobalInt('CASHDESK_READER_KEYCODE_FOR_ENTER'.$_SESSION['takeposterminal']) > 0 ? getDolGlobalInt('CASHDESK_READER_KEYCODE_FOR_ENTER'.$_SESSION['takeposterminal']) : '';
+$keyCodeForEnter = '';
+if (!empty($_SESSION['takeposterminal'])) {
+	$keyCodeForEnter = getDolGlobalInt('CASHDESK_READER_KEYCODE_FOR_ENTER'.$_SESSION['takeposterminal']) > 0 ? getDolGlobalString('CASHDESK_READER_KEYCODE_FOR_ENTER'.$_SESSION['takeposterminal']) : '';
+}
 ?>
 <div class="container">
 
@@ -1121,7 +1136,11 @@ if (!getDolGlobalString('TAKEPOS_HIDE_HEAD_BAR')) {
 				<a class="topnav-terminalhour" onclick="ModalBox('ModalTerminal')">
 				<span class="fa fa-cash-register"></span>
 				<span class="hideonsmartphone">
-				<?php echo getDolGlobalString("TAKEPOS_TERMINAL_NAME_".$_SESSION["takeposterminal"], $langs->trans("TerminalName", $_SESSION["takeposterminal"])); ?>
+				<?php
+				if (!empty($_SESSION["takeposterminal"])) {
+					echo getDolGlobalString("TAKEPOS_TERMINAL_NAME_".$_SESSION["takeposterminal"], $langs->trans("TerminalName", $_SESSION["takeposterminal"]));
+				}
+				?>
 				</span>
 				<?php
 				echo '<span class="hideonsmartphone"> - '.dol_print_date(dol_now(), "day").'</span>'; ?>
@@ -1135,6 +1154,7 @@ if (!getDolGlobalString('TAKEPOS_HIDE_HEAD_BAR')) {
 				</div>
 				<!-- section for customer -->
 				<div class="inline-block valignmiddle" id="customerandsales"></div>
+				<input type="hidden" id="idcustomer" value="">
 				<!-- section for shopping carts -->
 				<div class="inline-block valignmiddle" id="shoppingcart"></div>
 				<!-- More info about customer -->
@@ -1166,7 +1186,7 @@ if (!getDolGlobalString('TAKEPOS_HIDE_HEAD_BAR')) {
 				?>
 				<div class="login_block_user">
 				<?php
-				print top_menu_user(1);
+				print top_menu_user(1, DOL_URL_ROOT.'/user/logout.php?token='.newtoken().'&urlfrom='.urlencode('/takepos/?setterminal='.((int) $term)));
 				?>
 				</div>
 			</div>
@@ -1402,7 +1422,7 @@ if (getDolGlobalInt('TAKEPOS_PRINTER_TO_USE'.$term) > 0 || getDolGlobalString('T
 
 $sql = "SELECT rowid, status, entity FROM ".MAIN_DB_PREFIX."pos_cash_fence WHERE";
 $sql .= " entity = ".((int) $conf->entity)." AND ";
-$sql .= " posnumber = ".((int) $_SESSION["takeposterminal"])." AND ";
+$sql .= " posnumber = ".((int) empty($_SESSION["takeposterminal"]) ? 0 : $_SESSION["takeposterminal"])." AND ";
 $sql .= " date_creation > '".$db->idate(dol_get_first_hour(dol_now()))."'";
 
 $resql = $db->query($sql);
@@ -1533,21 +1553,21 @@ if (getDolGlobalString('TAKEPOS_WEIGHING_SCALE')) {
 	$count = 0;
 	while ($count < $MAXPRODUCT) {
 		print '<div class="wrapper2 arrow" id="prodiv'.$count.'"  '; ?>
-						<?php if ($count == ($MAXPRODUCT - 2)) {
-							?> onclick="MoreProducts('less')" <?php
-						}
-						if ($count == ($MAXPRODUCT - 1)) {
-							?> onclick="MoreProducts('more')" <?php
-						} else {
-							echo 'onclick="ClickProduct('.$count.')"';
-						} ?>>
+								<?php if ($count == ($MAXPRODUCT - 2)) {
+									?> onclick="MoreProducts('less')" <?php
+								}
+								if ($count == ($MAXPRODUCT - 1)) {
+									?> onclick="MoreProducts('more')" <?php
+								} else {
+									echo 'onclick="ClickProduct('.$count.')"';
+								} ?>>
 					<?php
 					if ($count == ($MAXPRODUCT - 2)) {
-								//echo '<img class="imgwrapper" src="img/arrow-prev-top.png" height="100%" id="proimg'.$count.'" />';
-								print '<span class="fa fa-chevron-left centerinmiddle" style="font-size: 5em; cursor: pointer;"></span>';
+						//echo '<img class="imgwrapper" src="img/arrow-prev-top.png" height="100%" id="proimg'.$count.'" />';
+						print '<span class="fa fa-chevron-left centerinmiddle" style="font-size: 5em; cursor: pointer;"></span>';
 					} elseif ($count == ($MAXPRODUCT - 1)) {
-							//echo '<img class="imgwrapper" src="img/arrow-next-top.png" height="100%" id="proimg'.$count.'" />';
-							print '<span class="fa fa-chevron-right centerinmiddle" style="font-size: 5em; cursor: pointer;"></span>';
+						//echo '<img class="imgwrapper" src="img/arrow-next-top.png" height="100%" id="proimg'.$count.'" />';
+						print '<span class="fa fa-chevron-right centerinmiddle" style="font-size: 5em; cursor: pointer;"></span>';
 					} else {
 						if (!getDolGlobalString('TAKEPOS_HIDE_PRODUCT_PRICES')) {
 							print '<div class="" id="proprice'.$count.'"></div>';
@@ -1558,15 +1578,15 @@ if (getDolGlobalString('TAKEPOS_WEIGHING_SCALE')) {
 							print '<img class="imgwrapper" title="" id="proimg'.$count.'">';
 						}
 					} ?>
-					<?php if ($count != $MAXPRODUCT - 2 && $count != $MAXPRODUCT - 1 && !getDolGlobalString('TAKEPOS_HIDE_PRODUCT_IMAGES')) { ?>
+						<?php if ($count != $MAXPRODUCT - 2 && $count != $MAXPRODUCT - 1 && !getDolGlobalString('TAKEPOS_HIDE_PRODUCT_IMAGES')) { ?>
 					<div class="description" id="prodivdesc<?php echo $count; ?>">
 						<div class="description_content" id="prodesc<?php echo $count; ?>"></div>
 					</div>
-					<?php } ?>
+						<?php } ?>
 					<div class="catwatermark" id='prowatermark<?php echo $count; ?>'>...</div>
 				</div>
-			<?php
-			$count++;
+					<?php
+					$count++;
 	}
 	?>
 				<input type="hidden" id="search_start_less" value="0">

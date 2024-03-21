@@ -278,7 +278,7 @@ return [
 		'objectoffield' => '\CommonObject',
 		'senderissupplier' => 'int<0,1,2>',
 		'user' => '\User',
-		'website' => '\WebSite',
+		'website' => 'string',  // See discussion https://github.com/Dolibarr/dolibarr/pull/28891#issuecomment-2002268334  // Disable because Phan infers Website type
 		'websitepage' => '\WebSitePage',
 		'websitepagefile' => 'string',
 		// 'object' => '\CommonObject',  // Deprecated, not enabled because conflicts with $object assignments
@@ -318,6 +318,7 @@ return [
 	//	to `exclude_analysis_directory_list`.
 	"exclude_analysis_directory_list" => [
 		'htdocs/includes/',
+		'htdocs/install/doctemplates/websites/',
 		'htdocs/core/class/lessc.class.php', // External library
 		PHAN_DIR . '/stubs/',
 	],
@@ -436,10 +437,11 @@ return [
 		// 'PhanPluginUnknownMethodReturnType',
 		'PhanPluginUnknownArrayMethodParamType',
 		'PhanPluginWhitespaceTab',   // Dolibarr uses tabs
-		'PhanPluginWhitespaceTrailing',   // Should be handled by other tools
+		// 'PhanPluginWhitespaceTrailing',
 		// 'PhanPluginCanUsePHP71Void',
 		'PhanPluginUnknownArrayMethodReturnType',
-		'PhanTypeMismatchArgumentInternal',
+		// 'PhanTypeMismatchArgumentInternal',
+		'PhanTypeMismatchArgumentNullableInternal',
 		'PhanPluginDuplicateAdjacentStatement',
 		'PhanTypeInvalidLeftOperandOfNumericOp',
 		'PhanTypeMismatchProperty',
@@ -467,7 +469,7 @@ return [
 		'PhanPluginUnknownArrayFunctionParamType',
 		// 'PhanPluginDescriptionlessCommentOnPublicProperty',
 		// 'PhanPluginUnknownFunctionParamType',  // Finds certain errors in PHPdoc typing
-		'PhanTypeSuspiciousStringExpression',
+		// 'PhanTypeSuspiciousStringExpression',
 		// 'PhanPluginRedundantAssignment',
 
 		'PhanTypeExpectedObjectPropAccess',
@@ -497,7 +499,7 @@ return [
 		// 'PhanTypeMismatchDimAssignment',
 		// 'PhanPluginDescriptionlessCommentOnProtectedMethod',
 		// 'PhanPluginPrintfIncompatibleArgumentTypeWeak',
-		'PhanUndeclaredVariableAssignOp',
+		// 'PhanUndeclaredVariableAssignOp',
 		// 'PhanTypeExpectedObjectOrClassName',
 		'PhanEmptyFQSENInClasslike',
 		// 'PhanTypeMismatchArgumentInternalReal',
@@ -614,7 +616,7 @@ return [
 		'PhanNonClassMethodCall',
 		// 'PhanPluginNoAssert',
 		// 'PhanTypeMismatchReturnSuperType',
-		'PhanTypeMismatchArgumentSuperType',
+		// 'PhanTypeMismatchArgumentSuperType',
 		'PhanPluginDuplicateConditionalTernaryDuplication',
 	],
 	// You can put relative paths to internal stubs in this config option.

@@ -31,9 +31,6 @@ CodePaymentTerm
 IdPaymentTerm
 LabelPaymentTerm
 
-# ticket
-TicketAnswered
-
 # website_template
 Message
 Map
@@ -1963,6 +1960,7 @@ NewStripePaymentFailed
 NewStripePaymentReceived
 NewSupplier
 NewUserPassword
+NewWorkstation
 NextDateToExecutionShort
 NextDateToIntervention
 NoAccount
@@ -3684,4 +3682,3 @@ WebPortalSetupPage
 XSubsriptionErrors
 YouCanChooseAModelForYouMailContent
 YouCanMakeSomeInstructionForEmail
-helpWithAi
