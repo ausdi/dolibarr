@@ -416,7 +416,7 @@ class Commande extends CommonOrder
 				$dir = dol_buildpath($reldir."core/modules/commande/");
 
 				// Load file with numbering class (if found)
-				$mybool |= @include_once $dir.$file;
+				$mybool = ((bool) @include_once $dir.$file) || $mybool;
 			}
 
 			if ($mybool === false) {
@@ -1634,8 +1634,8 @@ class Commande extends CommonOrder
 			$price = $pu;
 			$remise = 0;
 			if ($remise_percent > 0) {
-				$remise = round(($pu * $remise_percent / 100), 2);
-				$price = $pu - $remise;
+				$remise = round(((float) $pu * $remise_percent / 100), 2);
+				$price = (float) $pu - $remise;
 			}
 
 			// Insert line
@@ -3187,8 +3187,8 @@ class Commande extends CommonOrder
 			}
 			$remise = 0;
 			if ($remise_percent > 0) {
-				$remise = round(($pu * $remise_percent / 100), 2);
-				$price = ($pu - $remise);
+				$remise = round(((float) $pu * $remise_percent / 100), 2);
+				$price = ((float) $pu - $remise);
 			}
 
 			//Fetch current line from the database and then clone the object and set it in $oldline property
