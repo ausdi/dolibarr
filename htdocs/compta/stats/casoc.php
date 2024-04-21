@@ -60,7 +60,7 @@ $socid = GETPOSTINT('socid');
 // Category
 $selected_cat = GETPOSTINT('search_categ');
 if ($selected_cat == -1) {
-	$selected_cat = '';
+	$selected_cat = 0;
 }
 $subcat = false;
 if (GETPOST('subcat', 'alpha') === 'yes') {
@@ -87,7 +87,7 @@ $month = GETPOSTINT("month");
 $search_societe = GETPOST("search_societe", 'alpha');
 $search_zip = GETPOST("search_zip", 'alpha');
 $search_town = GETPOST("search_town", 'alpha');
-$search_country = GETPOST("search_country", 'alpha');
+$search_country = GETPOST("search_country", 'aZ09');
 $date_startyear = GETPOSTINT("date_startyear");
 $date_startmonth = GETPOSTINT("date_startmonth");
 $date_startday = GETPOSTINT("date_startday");

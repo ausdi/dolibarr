@@ -1057,7 +1057,7 @@ if ($dirins && $action == 'initobject' && $module && $objectname) {
 	dol_mkdir($destdir.'/scripts');
 	dol_mkdir($destdir.'/sql');
 
-	// Scan dir class to find if an object with same name already exists.
+	// Scan dir class to find if an object with the same name already exists.
 	if (!$error) {
 		$dirlist = dol_dir_list($destdir.'/class', 'files', 0, '\.txt$');
 		$alreadyfound = false;
@@ -1072,7 +1072,7 @@ if ($dirins && $action == 'initobject' && $module && $objectname) {
 		}
 	}
 
-	// If we must reuse a table for properties, define $stringforproperties
+	// If we must reuse an existing table for properties, define $stringforproperties
 	$stringforproperties = '';
 	$tablename = GETPOST('initfromtablename', 'alpha');
 	if ($tablename) {
@@ -1479,38 +1479,41 @@ if ($dirins && $action == 'initobject' && $module && $objectname) {
 			'langs'=>'mymodule@mymodule',
 			'position'=>1000+\$r,
 			'enabled'=>'isModEnabled(\"mymodule\")',
-			'perms'=>'\$user->hasRight(\"mymodule\", \"myobject\", \"read\")',
+			'perms'=>'".(GETPOST('generatepermissions') ? '$user->hasRight("mymodule", "myobject", "read")' : '1')."',
 			'target'=>'',
 			'user'=>2,
+			'object'=>'MyObject'
 		);
-        \$this->menu[\$r++]=array(
-            'fk_menu'=>'fk_mainmenu=mymodule,fk_leftmenu=myobject',
-            'type'=>'left',
-            'titre'=>'List MyObject',
-            'mainmenu'=>'mymodule',
-            'leftmenu'=>'mymodule_myobject_list',
-            'url'=>'/mymodule/myobject_list.php',
-            'langs'=>'mymodule@mymodule',
-            'position'=>1000+\$r,
-            'enabled'=>'isModEnabled(\"mymodule\")',
-			'perms'=>'\$user->hasRight(\"mymodule\", \"myobject\", \"read\")',
-            'target'=>'',
-            'user'=>2,
+		\$this->menu[\$r++]=array(
+			'fk_menu'=>'fk_mainmenu=mymodule,fk_leftmenu=myobject',
+			'type'=>'left',
+			'titre'=>'List MyObject',
+			'mainmenu'=>'mymodule',
+			'leftmenu'=>'mymodule_myobject_list',
+			'url'=>'/mymodule/myobject_list.php',
+			'langs'=>'mymodule@mymodule',
+			'position'=>1000+\$r,
+			'enabled'=>'isModEnabled(\"mymodule\")',
+			'perms'=>'".(GETPOST('generatepermissions') ? '$user->hasRight("mymodule", "myobject", "read")' : '1')."',
+			'target'=>'',
+			'user'=>2,
+			'object'=>'MyObject'
         );
-        \$this->menu[\$r++]=array(
-            'fk_menu'=>'fk_mainmenu=mymodule,fk_leftmenu=myobject',
-            'type'=>'left',
-            'titre'=>'New MyObject',
-            'mainmenu'=>'mymodule',
-            'leftmenu'=>'mymodule_myobject_new',
-            'url'=>'/mymodule/myobject_card.php?action=create',
-            'langs'=>'mymodule@mymodule',
-            'position'=>1000+\$r,
-            'enabled'=>'isModEnabled(\"mymodule\")',
-			'perms'=>'\$user->hasRight(\"mymodule\", \"myobject\", \"write\")',
-            'target'=>'',
-            'user'=>2
-        );\n";
+		\$this->menu[\$r++]=array(
+			'fk_menu'=>'fk_mainmenu=mymodule,fk_leftmenu=myobject',
+			'type'=>'left',
+			'titre'=>'New MyObject',
+			'mainmenu'=>'mymodule',
+			'leftmenu'=>'mymodule_myobject_new',
+			'url'=>'/mymodule/myobject_card.php?action=create',
+			'langs'=>'mymodule@mymodule',
+			'position'=>1000+\$r,
+			'enabled'=>'isModEnabled(\"mymodule\")',
+			'perms'=>'".(GETPOST('generatepermissions') ? '$user->hasRight("mymodule", "myobject", "write")' : '1')."',
+			'target'=>'',
+			'user'=>2,
+			'object'=>'MyObject'
+		);";
 			$stringtoadd = preg_replace('/MyObject/', $objectname, $stringtoadd);
 			$stringtoadd = preg_replace('/mymodule/', strtolower($module), $stringtoadd);
 			$stringtoadd = preg_replace('/myobject/', strtolower($objectname), $stringtoadd);
@@ -1545,7 +1548,7 @@ if ($dirins && $action == 'initobject' && $module && $objectname) {
 				$warning++;
 				setEventMessages($langs->trans("WarningCommentNotFound", $langs->trans("Menus"), basename($moduledescriptorfile)), null, 'warnings');
 			} else {
-				$arrayofreplacement = array('/* END MODULEBUILDER LEFTMENU MYOBJECT */' => '/*LEFTMENU '.strtoupper($objectname).'*/'.$stringtoadd."\n\t\t".'/*END LEFTMENU '.strtoupper($objectname).'*/'."\n\t\t".'/* END MODULEBUILDER LEFTMENU MYOBJECT */');
+				$arrayofreplacement = array('/* BEGIN MODULEBUILDER LEFTMENU MYOBJECT */' => '/* BEGIN MODULEBUILDER LEFTMENU '.strtoupper($objectname).' */'.$stringtoadd."\n\t\t".'/* END MODULEBUILDER LEFTMENU '.strtoupper($objectname).' */'."\n\t\t".'/* BEGIN MODULEBUILDER LEFTMENU MYOBJECT */');
 				dolReplaceInFile($moduledescriptorfile, $arrayofreplacement);
 			}
 		}
@@ -2102,8 +2105,7 @@ if (($dirins && $action == 'confirm_deletedictionary' && $dicname) || ($dirins &
 	}
 
 	//chercher la table dicname
-	$query = "SHOW TABLES LIKE '" . MAIN_DB_PREFIX.strtolower($newdicname) . "'";
-	$checkTable = $db->query($query);
+	$checkTable = $db->DDLDescTable(MAIN_DB_PREFIX.strtolower($newdicname));
 	if ($checkTable && $db->num_rows($checkTable) <= 0) {
 		$error++;
 	}
@@ -2767,7 +2769,7 @@ if ($dirins && $action == 'addmenu' && empty($cancel)) {
 	if (GETPOST('type', 'alpha') == 'left' && !empty(GETPOST('lefmenu', 'alpha'))) {
 		if (!str_contains(GETPOST('leftmenu'), strtolower($module))) {
 			$error++;
-			setEventMessages($langs->trans("WarningFieldsMustContains", $langs->transnoentities("leftmenu")), null, 'errors');
+			setEventMessages($langs->trans("WarningFieldsMustContains", $langs->transnoentities("LeftmenuId")), null, 'errors');
 		}
 	}
 	$dirins = $listofmodules[strtolower($module)]['moduledescriptorrootpath'];
@@ -2777,7 +2779,7 @@ if ($dirins && $action == 'addmenu' && empty($cancel)) {
 	if (GETPOST('type', 'alpha') == 'left') {
 		if (empty(GETPOST('leftmenu')) && count($objects) > 0) {
 			$error++;
-			setEventMessages($langs->trans("ErrorCoherenceMenu", $langs->transnoentities("leftmenu"), $langs->transnoentities("type")), null, 'errors');
+			setEventMessages($langs->trans("ErrorCoherenceMenu", $langs->transnoentities("LeftmenuId"), $langs->transnoentities("type")), null, 'errors');
 		}
 	}
 	if (GETPOST('type', 'alpha') == 'top') {
@@ -2942,7 +2944,7 @@ if ($dirins && $action == "update_menu" && GETPOSTINT('menukey') && GETPOST('tab
 			}
 		}
 	} else {
-		$_POST['type'] = '';
+		$_POST['type'] = '';	// TODO Use a var here and later
 		$_POST['titre'] = '';
 		$_POST['fk_menu'] = '';
 		$_POST['leftmenu'] = '';
@@ -3346,7 +3348,7 @@ if ($module == 'initmodule') {
 
 	print $langs->trans("EnterNameOfModuleToDeleteDesc").'<br><br>';
 
-	print '<input type="text" name="module" placeholder="'.dol_escape_htmltag($langs->trans("ModuleKey")).'" value="">';
+	print '<input type="text" name="module" placeholder="'.dol_escape_htmltag($langs->trans("ModuleKey")).'" value="" autofocus>';
 	print '<input type="submit" class="button smallpaddingimp" value="'.$langs->trans("Delete").'"'.($dirins ? '' : ' disabled="disabled"').'>';
 	print '</form>';
 } elseif (!empty($module)) {
@@ -4058,7 +4060,7 @@ if ($module == 'initmodule') {
 
 				print $langs->trans("EnterNameOfObjectToDeleteDesc").'<br><br>';
 
-				print '<input type="text" name="objectname" value="'.dol_escape_htmltag($modulename).'" placeholder="'.dol_escape_htmltag($langs->trans("ObjectKey")).'">';
+				print '<input type="text" name="objectname" value="" placeholder="'.dol_escape_htmltag($langs->trans("ObjectKey")).'" autofocus>';
 				print '<input type="submit" class="button smallpaddingimp" name="delete" value="'.dol_escape_htmltag($langs->trans("Delete")).'"'.($dirins ? '' : ' disabled="disabled"').'>';
 				print '</form>';
 			} else {
@@ -4960,7 +4962,7 @@ if ($module == 'initmodule') {
 
 					print '<span class="opacitymedium">'.$langs->trans("EnterNameOfDictionaryDesc").'</span><br><br>';
 
-					print dol_get_fiche_head('');
+					print dol_get_fiche_head();
 					print '<table class="border centpercent">';
 					print '<tbody>';
 					print '<tr><td class="titlefieldcreate fieldrequired">'.$langs->trans("Table").'</td><td><input type="text" name="dicname" maxlength="64" value="'.dol_escape_htmltag(GETPOST('dicname', 'alpha') ? GETPOST('dicname', 'alpha') : $modulename).'" placeholder="'.dol_escape_htmltag($langs->trans("DicKey")).'" autofocus></td>';
@@ -5403,7 +5405,7 @@ if ($module == 'initmodule') {
 							print '<td class="center minwidth75 tdstickyright tdstickyghostwhite">';
 							if ($menu['titre'] != 'Module'.$module.'Name') {
 								print '<a class="editfielda reposition marginleftonly marginrighttonly paddingright paddingleft" href="'.$_SERVER["PHP_SELF"].'?action=editmenu&token='.newToken().'&menukey='.urlencode((string) ($i)).'&tab='.urlencode((string) ($tab)).'&module='.urlencode((string) ($module)).'&tabobj='.urlencode((string) ($tabobj)).'">'.img_edit().'</a>';
-								print '<a class="marginleftonly marginrighttonly paddingright paddingleft" href="'.$_SERVER["PHP_SELF"].'?action=deletemenu&token='.newToken().'&menukey='.urlencode((string) ($i - 1)).'&tab='.urlencode((string) ($tab)).'&module='.urlencode((string) ($module)).'&tabobj='.urlencode((string) ($tabobj)).'">'.img_delete().'</a>';
+								print '<a class="deletefielda reposition marginleftonly marginrighttonly paddingright paddingleft" href="'.$_SERVER["PHP_SELF"].'?action=deletemenu&token='.newToken().'&menukey='.urlencode((string) ($i - 1)).'&tab='.urlencode((string) ($tab)).'&module='.urlencode((string) ($module)).'">'.img_delete().'</a>';
 							}
 							print '</td>';
 						}

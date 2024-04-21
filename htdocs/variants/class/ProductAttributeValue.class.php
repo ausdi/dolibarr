@@ -40,8 +40,8 @@ class ProductAttributeValue extends CommonObjectLine
 	public $table_element = 'product_attribute_value';
 
 	/**
-	 * @var int  Does this object support multicompany module ?
-	 * 0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table
+	 * @var int<0,1>|string  	Does this object support multicompany module ?
+	 * 							0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table (example 'fk_soc@societe')
 	 */
 	public $ismultientitymanaged = 1;
 
@@ -262,8 +262,8 @@ class ProductAttributeValue extends CommonObjectLine
 	 *
 	 * @param 	int 	$prodattr_id	 	Product attribute id
 	 * @param 	bool 	$only_used 			Fetch only used attribute values
-	 * @param	int		$returnonlydata		0: return object, 1: return only data
-	 * @return 	ProductAttributeValue[]		Array of object
+	 * @param	int<0,1>	$returnonlydata		0: return object, 1: return only data
+	 * @return 	ProductAttributeValue[]|stdClass[]	Array of object
 	 */
 	public function fetchAllByProductAttribute($prodattr_id, $only_used = false, $returnonlydata = 0)
 	{

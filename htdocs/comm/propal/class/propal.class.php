@@ -86,8 +86,8 @@ class Propal extends CommonObject
 	public $picto = 'propal';
 
 	/**
-	 * 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
-	 * @var int
+	 * @var int<0,1>|string  	Does this object support multicompany module ?
+	 * 							0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table (example 'fk_soc@societe')
 	 */
 	public $ismultientitymanaged = 1;
 
@@ -130,7 +130,7 @@ class Propal extends CommonObject
 	public $ref_customer;
 
 	/**
-	 * @var Propal oldcopy with propal properties
+	 * @var static oldcopy with propal properties
 	 */
 	public $oldcopy;
 
@@ -4012,10 +4012,13 @@ class PropaleLigne extends CommonObjectLine
 	public $marge_tx;
 	public $marque_tx;
 
+	/**
+	 * 1: frais de port
+	 * 2: ecotaxe
+	 * 3: option line (when qty = 0)
+	 * @var int special code
+	 */
 	public $special_code; // Tag for special lines (exclusive tags)
-	// 1: frais de port
-	// 2: ecotaxe
-	// 3: option line (when qty = 0)
 
 	public $info_bits = 0; // Some other info:
 	// Bit 0: 	0 si TVA normal - 1 if TVA NPR
