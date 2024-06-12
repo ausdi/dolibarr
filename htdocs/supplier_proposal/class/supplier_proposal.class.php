@@ -78,12 +78,6 @@ class SupplierProposal extends CommonObject
 	public $picto = 'supplier_proposal';
 
 	/**
-	 * @var int<0,1>|string  	Does this object support multicompany module ?
-	 * 							0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table (example 'fk_soc@societe')
-	 */
-	public $ismultientitymanaged = 1;
-
-	/**
 	 * 0=Default, 1=View may be restricted to sales representative only if no permission to see all or to company of external user if external user
 	 * @var integer
 	 */
@@ -235,6 +229,7 @@ class SupplierProposal extends CommonObject
 
 		$this->db = $db;
 
+		$this->ismultientitymanaged = 1;
 		$this->socid = $socid;
 		$this->id = $supplier_proposalid;
 	}
@@ -426,7 +421,7 @@ class SupplierProposal extends CommonObject
 		}
 
 		$remise_percent = price2num($remise_percent);
-		$qty = price2num($qty);
+		$qty = (float) price2num($qty);
 		$pu_ht = price2num($pu_ht);
 		$pu_ttc = price2num($pu_ttc);
 		if (!preg_match('/\((.*)\)/', (string) $txtva)) {
@@ -687,7 +682,7 @@ class SupplierProposal extends CommonObject
 
 		// Clean parameters
 		$remise_percent = price2num($remise_percent);
-		$qty = price2num($qty);
+		$qty = (float) price2num($qty);
 		$pu = price2num($pu);
 		if (!preg_match('/\((.*)\)/', (string) $txtva)) {
 			$txtva = price2num($txtva); // $txtva can have format '5.0(XXX)' or '5'
@@ -702,7 +697,7 @@ class SupplierProposal extends CommonObject
 			$special_code = 0; // Remove option tag
 		}
 
-		if ($this->statut == 0) {
+		if ($this->status == 0) {
 			$this->db->begin();
 
 			// Calcul du total TTC et de la TVA pour la ligne a partir de
@@ -2820,6 +2815,16 @@ class SupplierProposalLine extends CommonObjectLine
 	 */
 	public $table_element = 'supplier_proposaldet';
 
+	/**
+	 * @see CommonObjectLine
+	 */
+	public $parent_element = 'supplier_proposal';
+
+	/**
+	 * @see CommonObjectLine
+	 */
+	public $fk_parent_attribute = 'fk_supplier_proposal';
+
 	public $oldline;
 
 	/**
@@ -2856,10 +2861,17 @@ class SupplierProposalLine extends CommonObjectLine
 	 */
 	public $product_type = Product::TYPE_PRODUCT;
 
+	/**
+	 * @var float Quantity
+	 */
 	public $qty;
 	public $tva_tx;
 	public $vat_src_code;
 
+	/**
+	 * Unit price before taxes
+	 * @var float
+	 */
 	public $subprice;
 	public $remise_percent;
 

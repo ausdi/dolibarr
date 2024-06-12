@@ -1,23 +1,24 @@
 <?php
-/* Copyright (C) 2002-2006 Rodolphe Quiedeville  <rodolphe@quiedeville.org>
- * Copyright (C) 2004      Eric Seigne           <eric.seigne@ryxeo.com>
- * Copyright (C) 2004-2016 Laurent Destailleur   <eldy@users.sourceforge.net>
- * Copyright (C) 2005      Marc Barilley / Ocebo <marc@ocebo.com>
- * Copyright (C) 2005-2015 Regis Houssin         <regis.houssin@inodbox.com>
- * Copyright (C) 2006      Andre Cianfarani      <acianfa@free.fr>
- * Copyright (C) 2010-2020 Juanjo Menent         <jmenent@2byte.es>
- * Copyright (C) 2012      Christophe Battarel   <christophe.battarel@altairis.fr>
- * Copyright (C) 2013      Florian Henry         <florian.henry@open-concept.pro>
- * Copyright (C) 2013      Cédric Salvador       <csalvador@gpcsolutions.fr>
- * Copyright (C) 2015      Jean-François Ferry   <jfefe@aternatik.fr>
- * Copyright (C) 2015-2022 Ferran Marcet         <fmarcet@2byte.es>
- * Copyright (C) 2017      Josep Lluís Amador    <joseplluis@lliuretic.cat>
- * Copyright (C) 2018      Charlene Benke        <charlie@patas-monkey.com>
- * Copyright (C) 2019-2021 Alexandre Spangaro    <aspangaro@open-dsi.fr>
- * Copyright (C) 2023	   Nick Fragoulis
- * Copyright (C) 2023	   Joachim Kueter		 <git-jk@bloxera.com>
- * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
- * Copyright (C) 2024       Frédéric France             <frederic.france@free.fr>
+/* Copyright (C) 2002-2006	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
+ * Copyright (C) 2004		Eric Seigne				<eric.seigne@ryxeo.com>
+ * Copyright (C) 2004-2016	Laurent Destailleur		<eldy@users.sourceforge.net>
+ * Copyright (C) 2005		Marc Barilley / Ocebo	<marc@ocebo.com>
+ * Copyright (C) 2005-2015	Regis Houssin			<regis.houssin@inodbox.com>
+ * Copyright (C) 2006		Andre Cianfarani		<acianfa@free.fr>
+ * Copyright (C) 2010-2020	Juanjo Menent			<jmenent@2byte.es>
+ * Copyright (C) 2012		Christophe Battarel		<christophe.battarel@altairis.fr>
+ * Copyright (C) 2013		Florian Henry			<florian.henry@open-concept.pro>
+ * Copyright (C) 2013		Cédric Salvador			<csalvador@gpcsolutions.fr>
+ * Copyright (C) 2015		Jean-François Ferry		<jfefe@aternatik.fr>
+ * Copyright (C) 2015-2022	Ferran Marcet			<fmarcet@2byte.es>
+ * Copyright (C) 2017		Josep Lluís Amador		<joseplluis@lliuretic.cat>
+ * Copyright (C) 2018		Charlene Benke			<charlie@patas-monkey.com>
+ * Copyright (C) 2019-2021	Alexandre Spangaro		<aspangaro@open-dsi.fr>
+ * Copyright (C) 2023		Nick Fragoulis
+ * Copyright (C) 2023		Joachim Kueter			<git-jk@bloxera.com>
+ * Copyright (C) 2024		MDW						<mdeweerd@users.noreply.github.com>
+ * Copyright (C) 2024		Frédéric France			<frederic.france@free.fr>
+ * Copyright (C) 2021-2024 	Anthony Berton			<anthony.berton@bb2a.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +36,7 @@
 
 /**
  *	\file       htdocs/compta/facture/list.php
- *	\ingroup    facture
+ *	\ingroup    invoice
  *	\brief      List of customer invoices
  */
 
@@ -215,11 +216,11 @@ $arrayfields = array(
 	'p.ref' => array('label' => "ProjectRef", 'langs' => 'projects', 'checked' => 1, 'enabled' => (!isModEnabled('project') ? 0 : 1), 'position' => 40),
 	'p.title' => array('label' => "ProjectLabel", 'checked' => 0, 'enabled' => (!isModEnabled('project') ? 0 : 1), 'position' => 41),
 	's.nom' => array('label' => "ThirdParty", 'checked' => 1, 'position' => 50),
-	's.name_alias' => array('label' => "AliasNameShort", 'checked' => 1, 'position' => 51),
+	's.name_alias' => array('label' => "AliasNameShort", 'checked' => -1, 'position' => 51),
 	's.code_client' => array('label' => "CustomerCodeShort", 'checked' => -1, 'position' => 52),
 	's2.nom' => array('label' => 'ParentCompany', 'position' => 32, 'checked' => 0),
 	's.town' => array('label' => "Town", 'checked' => -1, 'position' => 55),
-	's.zip' => array('label' => "Zip", 'checked' => 1, 'position' => 60),
+	's.zip' => array('label' => "Zip", 'checked' => -1, 'position' => 60),
 	'state.nom' => array('label' => "StateShort", 'checked' => 0, 'position' => 65),
 	'country.code_iso' => array('label' => "Country", 'checked' => 0, 'position' => 70),
 	'typent.code' => array('label' => "ThirdPartyType", 'checked' => $checkedtypetiers, 'position' => 75),
@@ -247,7 +248,7 @@ $arrayfields = array(
 	'total_mark_rate' => array('label' => 'MarkRate', 'checked' => 0, 'position' => 303, 'enabled' => (!isModEnabled('margin') || !$user->hasRight('margins', 'liretous') || !getDolGlobalString('DISPLAY_MARK_RATES') ? 0 : 1)),
 	'f.datec' => array('label' => "DateCreation", 'checked' => 0, 'position' => 500),
 	'f.tms' => array('type' => 'timestamp', 'label' => 'DateModificationShort', 'enabled' => 1, 'visible' => -1, 'notnull' => 1, 'position' => 502),
-	'u.login' => array('label' => "UserAuthor", 'checked' => 1, 'position' => 504),
+	'u.login' => array('label' => "UserAuthor", 'checked' => 1, 'visible' => -1, 'position' => 504),
 	'sale_representative' => array('label' => "SaleRepresentativesOfThirdParty", 'checked' => 0, 'position' => 506),
 	//'f.fk_user_author' =>array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>1, 'visible'=>-1, 'position'=>506),
 	//'f.fk_user_modif' =>array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>1, 'visible'=>-1, 'notnull'=>-1, 'position'=>508),
@@ -630,7 +631,7 @@ $selectedfields = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfi
 // Build and execute select
 // --------------------------------------------------------------------
 $sql = 'SELECT';
-if ($search_all || $search_user > 0) {
+if ($search_all) {
 	$sql = 'SELECT DISTINCT';
 }
 $sql .= ' f.rowid as id, f.ref, f.ref_client, f.fk_soc, f.type, f.subtype, f.note_private, f.note_public, f.increment, f.fk_mode_reglement, f.fk_cond_reglement, f.total_ht, f.total_tva, f.total_ttc,';
@@ -692,10 +693,6 @@ if (!empty($search_fac_rec_source_title)) {
 }
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet as p ON p.rowid = f.fk_projet";
 $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'user AS u ON f.fk_user_author = u.rowid';
-if ($search_user > 0) {
-	$sql .= ", ".MAIN_DB_PREFIX."element_contact as ec";
-	$sql .= ", ".MAIN_DB_PREFIX."c_type_contact as tc";
-}
 // Add table from hooks
 $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldListFrom', $parameters, $object); // Note that $action and $object may have been modified by hook
@@ -868,11 +865,17 @@ if ($search_late == 'late') {
 /*if ($search_sale > 0) {
 	$sql .= " AND s.rowid = sc.fk_soc AND sc.fk_user = ".((int) $search_sale);
 }*/
-if ($search_user > 0) {
-	$sql .= " AND ec.fk_c_type_contact = tc.rowid AND tc.element='facture' AND tc.source='internal' AND ec.element_id = f.rowid AND ec.fk_socpeople = ".((int) $search_user);
-}
 if (!empty($search_fac_rec_source_title)) {
 	$sql .= natural_search('facrec.titre', $search_fac_rec_source_title);
+}
+// Search on user
+if ($search_user > 0) {
+	$sql .= " AND EXISTS (";
+	$sql .= " SELECT ec.fk_c_type_contact, ec.element_id, ec.fk_socpeople";
+	$sql .= " FROM llx_element_contact as ec";
+	$sql .= " INNER JOIN llx_c_type_contact as tc";
+	$sql .= " ON ec.fk_c_type_contact = tc.rowid AND tc.element='facture' AND tc.source='internal'";
+	$sql .= " WHERE ec.element_id = f.rowid AND ec.fk_socpeople = ".((int) $search_user).")";
 }
 // Search on sale representative
 if ($search_sale && $search_sale != '-1') {
@@ -1119,16 +1122,16 @@ if ($search_customer_code) {
 	$param .= '&search_customer_code='.urlencode($search_customer_code);
 }
 if ($search_sale > 0) {
-	$param .= '&search_sale='.urlencode($search_sale);
+	$param .= '&search_sale='.urlencode((string) $search_sale);
 }
 if ($search_user > 0) {
-	$param .= '&search_user='.urlencode((string) ($search_user));
+	$param .= '&search_user='.urlencode((string) $search_user);
 }
 if ($search_login) {
 	$param .= '&search_login='.urlencode($search_login);
 }
 if ($search_product_category > 0) {
-	$param .= '&search_product_category='.urlencode((string) ($search_product_category));
+	$param .= '&search_product_category='.urlencode((string) $search_product_category);
 }
 if ($search_montant_ht != '') {
 	$param .= '&search_montant_ht='.urlencode($search_montant_ht);
@@ -1194,7 +1197,7 @@ if (!empty($search_fac_rec_source_title)) {
 // Add $param from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 // Add $param from hooks
-$parameters = array();
+$parameters = array('param' => &$param);
 $reshook = $hookmanager->executeHooks('printFieldListSearchParam', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
 $param .= $hookmanager->resPrint;
 
@@ -2212,7 +2215,7 @@ if ($num > 0) {
 
 			// Third party
 			if (!empty($arrayfields['s.nom']['checked'])) {
-				print '<td class="tdoverflowmax200">';
+				print '<td class="tdoverflowmax150">';
 				if ($contextpage == 'poslist') {
 					print dol_escape_htmltag($companystatic->name);
 				} else {
@@ -2673,8 +2676,8 @@ if ($num > 0) {
 			}
 			// Note public
 			if (!empty($arrayfields['f.note_public']['checked'])) {
-				print '<td class="center">';
-				print dol_string_nohtmltag($obj->note_public);
+				print '<td class="sensiblehtmlcontent center">';
+				print dolPrintHTML($obj->note_public);
 				print '</td>';
 				if (!$i) {
 					$totalarray['nbfield']++;
@@ -2683,7 +2686,7 @@ if ($num > 0) {
 			// Note private
 			if (!empty($arrayfields['f.note_private']['checked'])) {
 				print '<td class="center">';
-				print dol_string_nohtmltag($obj->note_private);
+				print dolPrintHTML($obj->note_private);
 				print '</td>';
 				if (!$i) {
 					$totalarray['nbfield']++;

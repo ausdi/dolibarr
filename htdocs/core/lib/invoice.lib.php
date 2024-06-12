@@ -531,7 +531,7 @@ function getCustomerInvoiceDraftTable($maxCount = 500, $socid = 0)
 		}
 
 		// Add Group from hooks
-		$parameters = array();  // @phan-suppress-current-line PhanPluginRedundantAssignment
+		$parameters = array();
 		$reshook = $hookmanager->executeHooks('printFieldListGroupByCustomerDraft', $parameters);
 		$sql .= $hookmanager->resPrint;
 
@@ -546,9 +546,9 @@ function getCustomerInvoiceDraftTable($maxCount = 500, $socid = 0)
 
 			$result .= '<tr class="liste_titre">';
 			$result .= '<th colspan="3">';
-			$result .= $langs->trans("CustomersDraftInvoices").' ';
+			$result .= $langs->trans("CustomersDraftInvoices");
 			$result .= '<a href="'.DOL_URL_ROOT.'/compta/facture/list.php?search_status='.Facture::STATUS_DRAFT.'">';
-			$result .= '<span class="badge marginleftonlyshort">'.$num.'</span>';
+			$result .= '<span class="badge marginleftonly">'.$num.'</span>';
 			$result .= '</a>';
 			$result .= '</th>';
 			$result .= '</tr>';
@@ -679,9 +679,9 @@ function getDraftSupplierTable($maxCount = 500, $socid = 0)
 
 			$result .= '<tr class="liste_titre">';
 			$result .= '<th colspan="3">';
-			$result .= $langs->trans("SuppliersDraftInvoices").' ';
+			$result .= $langs->trans("SuppliersDraftInvoices");
 			$result .= '<a href="'.DOL_URL_ROOT.'/fourn/facture/list.php?search_status='.FactureFournisseur::STATUS_DRAFT.'">';
-			$result .= '<span class="badge marginleftonlyshort">'.$num.'</span>';
+			$result .= '<span class="badge marginleftonly">'.$num.'</span>';
 			$result .= '</a>';
 			$result .= '</th>';
 			$result .= '</tr>';

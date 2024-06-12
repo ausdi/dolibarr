@@ -224,7 +224,7 @@ if ($action == 'order' && GETPOST('valid')) {
 		$i = 0;
 		$fail = 0;
 		$orders = array();
-		$suppliersid = array_keys($suppliers);
+		$suppliersid = array_keys($suppliers);	// array of ids of suppliers
 		foreach ($suppliers as $supplier) {
 			$order = new CommandeFournisseur($db);
 
@@ -275,6 +275,7 @@ if ($action == 'order' && GETPOST('valid')) {
 				} else {
 					$id = $result;
 				}
+				$i++;
 			} else {
 				$order->socid = $suppliersid[$i];
 				$order->fetch_thirdparty();
@@ -365,7 +366,7 @@ $sql .= ' FROM ' . MAIN_DB_PREFIX . 'product as p';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'product_stock as s ON p.rowid = s.fk_product';
 $sql .= ' AND s.fk_entrepot  IN (' . $db->sanitize($list_warehouse) . ')';
 
-$list_warehouse_selected = ($fk_entrepot < 0) ? '0' : $fk_entrepot;
+$list_warehouse_selected = ($fk_entrepot < 0 || empty($fk_entrepot)) ? '0' : $fk_entrepot;
 $sql .= ' AND s.fk_entrepot  IN (' . $db->sanitize($list_warehouse_selected) . ')';
 
 
@@ -571,7 +572,7 @@ $i = 0;
 $helpurl = 'EN:Module_Stocks_En|FR:Module_Stock|';
 $helpurl .= 'ES:M&oacute;dulo_Stocks';
 
-llxHeader('', $title, $helpurl, '');
+llxHeader('', $title, $helpurl, '', 0, 0, '', '', '', 'mod-product page-stock_replenish');
 
 $head = array();
 

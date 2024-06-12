@@ -855,57 +855,21 @@ if ($action == 'create') {
 	$formmail->withaiprompt = 'html';
 	$formmail->withlayout = 1;
 
-	print '<tr class="fieldsforemail"><td></td><td>';
+	print '<tr class="fieldsforemail"><td></td><td class="tdtop">';
+
 	$out = '';
-	// Add link to add layout
-	if ($formmail->withlayout && $formmail->withfckeditor) {
-		$out .= '<a href="#" id="linkforlayouttemplates" class="reposition notasortlink inline-block alink marginrightonly">';
-		$out .= img_picto($langs->trans("FillMessageWithALayout"), 'layout', 'class="paddingrightonly"');
-		$out .= $langs->trans("FillMessageWithALayout").'...';
-		$out .= '</a> &nbsp; &nbsp; ';
+	$showlinktolayout = $formmail->withlayout && $formmail->withfckeditor;
+	$showlinktolayoutlabel = $langs->trans("FillMessageWithALayout");
+	$showlinktoai = ($formmail->withaiprompt && isModEnabled('ai')) ? 'textgenerationemail' : '';
+	$showlinktoailabel = $langs->trans("FillMessageWithAIContent");
+	$formatforouput = 'html';
+	$htmlname = 'bodyemail';
 
-		$out .= '<script>
-			$(document).ready(function() {
-				  $("#linkforlayouttemplates").click(function() {
-					console.log("We click on linkforlayouttemplates");
-					event.preventDefault();
-					jQuery("#template-selector").toggle();
-					//jQuery("#template-selector").attr("style", "aaa");
-					jQuery("#ai_input").hide();
-				});
-			});
-		</script>
-		';
-	}
+	// Fill $out
+	include DOL_DOCUMENT_ROOT.'/core/tpl/formlayoutai.tpl.php';
 
-	// Add link to add AI content
-	if ($formmail->withaiprompt && isModEnabled('ai')) {
-		$out .= '<a href="#" id="linkforaiprompt" class="reposition notasortlink inline-block alink marginrightonly">';
-		$out .= img_picto($langs->trans("FillMessageWithAIContent"), 'ai', 'class="paddingrightonly"');
-		$out .= $langs->trans("FillMessageWithAIContent").'...';
-		$out .= '</a>';
-		$out .= '<script>
-					$(document).ready(function() {
-						$("#linkforaiprompt").click(function() {
-							console.log("We click on linkforaiprompt");
-							event.preventDefault();
-							jQuery("#ai_input").toggle();
-							jQuery("#template-selector").hide();
-							if (!jQuery("ai_input").is(":hidden")) {
-								console.log("Set focus on input field");
-								jQuery("#ai_instructions").focus();
-							}
-						});
-					});
-				</script>';
-	}
-	if ($formmail->withfckeditor) {
-		$out .= $formmail->getModelEmailTemplate('bodyemail');
-	}
-	if ($formmail->withaiprompt && isModEnabled('ai')) {
-		$out .= $formmail->getSectionForAIPrompt('', 'bodyemail');
-	}
 	print $out;
+
 	print '</td></tr>';
 	print '</table>';
 
@@ -1070,14 +1034,20 @@ if ($action == 'create') {
 				print $form->editfieldkey("MailErrorsTo", 'email_errorsto', $object->email_errorsto, $object, $user->hasRight('mailing', 'creer') && $object->status < $object::STATUS_SENTCOMPLETELY, 'string');
 				print '</td><td>';
 				print $form->editfieldval("MailErrorsTo", 'email_errorsto', $object->email_errorsto, $object, $user->hasRight('mailing', 'creer') && $object->status < $object::STATUS_SENTCOMPLETELY, 'string');
-				$email = CMailFile::getValidAddress($object->email_errorsto, 2);
-				if ($action != 'editemail_errorsto') {
-					if ($email && !isValidEmail($email)) {
-						$langs->load("errors");
-						print img_warning($langs->trans("ErrorBadEMail", $email));
-					} elseif ($email && !isValidMailDomain($email)) {
-						$langs->load("errors");
-						print img_warning($langs->trans("ErrorBadMXDomain", $email));
+				$emailarray = CMailFile::getArrayAddress($object->email_errorsto);
+				foreach ($emailarray as $email => $name) {
+					if ($name != $email) {
+						print dol_escape_htmltag($name).' &lt;'.$email;
+						print '&gt;';
+						if ($email && !isValidEmail($email)) {
+							$langs->load("errors");
+							print img_warning($langs->trans("ErrorBadEMail", $email));
+						} elseif ($email && !isValidMailDomain($email)) {
+							$langs->load("errors");
+							print img_warning($langs->trans("ErrorBadMXDomain", $email));
+						}
+					} else {
+						print dol_print_email($object->email_errorsto, 0, 0, 0, 0, 1);
 					}
 				}
 				print '</td></tr>';
@@ -1117,9 +1087,9 @@ if ($action == 'create') {
 			$nbemail = ($object->nbemail ? $object->nbemail : 0);
 			if (is_numeric($nbemail)) {
 				$text = '';
-				if ((getDolGlobalString('MAILING_LIMIT_SENDBYWEB') && getDolGlobalInt('MAILING_LIMIT_SENDBYWEB') < $nbemail) && ($object->statut == 1 || ($object->statut == 2 && $nbtry < $nbemail))) {
+				if ((getDolGlobalString('MAILING_LIMIT_SENDBYWEB') && getDolGlobalInt('MAILING_LIMIT_SENDBYWEB') < $nbemail) && ($object->status == 1 || ($object->status == 2 && $nbtry < $nbemail))) {
 					if (getDolGlobalInt('MAILING_LIMIT_SENDBYWEB') > 0) {
-						$text .= $langs->trans('LimitSendingEmailing', getDolGlobalInt('MAILING_LIMIT_SENDBYWEB'));
+						$text .= $langs->trans('LimitSendingEmailing', getDolGlobalString('MAILING_LIMIT_SENDBYWEB'));
 					} else {
 						$text .= $langs->trans('SendingFromWebInterfaceIsNotAllowed');
 					}

@@ -70,17 +70,6 @@ class Contrat extends CommonObject
 	public $picto = 'contract';
 
 	/**
-	 * @var int<0,1>|string  	Does this object support multicompany module ?
-	 * 							0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table (example 'fk_soc@societe')
-	 */
-	public $ismultientitymanaged = 1;
-
-	/**
-	 * @var int  Does object support extrafields ? 0=No, 1=Yes
-	 */
-	public $isextrafieldmanaged = 1;
-
-	/**
 	 * 0=Default, 1=View may be restricted to sales representative only if no permission to see all or to company of external user if external user
 	 * @var integer
 	 */
@@ -311,6 +300,9 @@ class Contrat extends CommonObject
 	public function __construct($db)
 	{
 		$this->db = $db;
+
+		$this->ismultientitymanaged = 1;
+		$this->isextrafieldmanaged = 1;
 	}
 
 	/**
@@ -1425,7 +1417,7 @@ class Contrat extends CommonObject
 		}
 		//if (isset($this->extraparams)) $this->extraparams=trim($this->extraparams);
 
-		// $this->oldcopy should have been set by the caller of update
+		// $this->oldcopy must have been set by the caller of update
 
 		// Update request
 		$sql = "UPDATE ".MAIN_DB_PREFIX."contrat SET";
@@ -2094,9 +2086,9 @@ class Contrat extends CommonObject
 			$datas['refcustomer'] = '<br><b>'.$langs->trans('RefCustomer').':</b> '. $this->ref_customer;
 			if (!$nofetch) {
 				$langs->load('project');
-				if (empty($this->project) && $this->project instanceof Project) {
+				if (empty($this->project)) {
 					$res = $this->fetch_project();
-					if ($res > 0) {
+					if ($res > 0 && !empty($this->project) && $this->project instanceof Project) {
 						$datas['project'] = '<br><b>'.$langs->trans('Project').':</b> '.$this->project->getNomUrl(1, '', 0, 1);
 					}
 				}
@@ -3018,6 +3010,16 @@ class ContratLigne extends CommonObjectLine
 	public $table_element = 'contratdet';
 
 	/**
+	 * @see CommonObjectLine
+	 */
+	public $parent_element = 'contrat';
+
+	/**
+	 * @see CommonObjectLine
+	 */
+	public $fk_parent_attribute = 'fk_contrat';
+
+	/**
 	 * @var string 	Name to use for 'features' parameter to check module permissions user->rights->feature with restrictedArea().
 	 * 				Undefined means same value than $element. Can be use to force a check on another element for example for class of line, we mention here the parent element.
 	 */
@@ -3089,7 +3091,11 @@ class ContratLigne extends CommonObjectLine
 	 */
 	public $fk_remise_except;
 
-	public $subprice; // Unit price HT
+	/**
+	 * Unit price before taxes
+	 * @var float
+	 */
+	public $subprice;
 
 	/**
 	 * @var float
@@ -3098,6 +3104,9 @@ class ContratLigne extends CommonObjectLine
 	 */
 	public $price;
 
+	/**
+	 * @var float price without tax
+	 */
 	public $price_ht;
 
 	public $total_ht;
@@ -3210,9 +3219,10 @@ class ContratLigne extends CommonObjectLine
 	 *  @param  int		$mode       0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto, 6=Long label + Picto
 	 *	@param	int		$expired	0=Not expired, 1=Expired, -1=Both or unknown
 	 *  @param	string	$moreatt	More attribute
+	 *  @param	string	$morelabel	More label
 	 *  @return string      		Label of status
 	 */
-	public static function LibStatut($status, $mode, $expired = -1, $moreatt = '')
+	public static function LibStatut($status, $mode, $expired = -1, $moreatt = '', $morelabel = '')
 	{
 		// phpcs:enable
 		global $langs;
@@ -3248,7 +3258,7 @@ class ContratLigne extends CommonObjectLine
 		if (preg_match('/class="(.*)"/', $moreatt, $reg)) {
 			$params = array('badgeParams' => array('css' => $reg[1]));
 		}
-		return dolGetStatus($labelStatus, $labelStatusShort, '', $statusType, $mode, '', $params);
+		return dolGetStatus($labelStatus.($morelabel ? ' '.$morelabel : ''), $labelStatusShort.($morelabel ? ' '.$morelabel : ''), '', $statusType, $mode, '', $params);
 	}
 
 	/**
@@ -3480,11 +3490,11 @@ class ContratLigne extends CommonObjectLine
 		$this->tva_tx = trim((string) $this->tva_tx);
 		$this->localtax1_tx = trim($this->localtax1_tx);
 		$this->localtax2_tx = trim($this->localtax2_tx);
-		$this->qty = trim((string) $this->qty);
+		$this->qty = (float) $this->qty;
 		$this->remise_percent = trim((string) $this->remise_percent);
 		$this->fk_remise_except = (int) $this->fk_remise_except;
-		$this->subprice = price2num($this->subprice);
-		$this->price_ht = price2num($this->price_ht);
+		$this->subprice = (float) price2num($this->subprice);
+		$this->price_ht = (float) price2num($this->price_ht);
 		$this->info_bits = (int) $this->info_bits;
 		$this->fk_user_author = (int) $this->fk_user_author;
 		$this->fk_user_ouverture = (int) $this->fk_user_ouverture;
@@ -3543,7 +3553,8 @@ class ContratLigne extends CommonObjectLine
 
 		// $this->oldcopy should have been set by the caller of update (here properties were already modified)
 		if (empty($this->oldcopy)) {
-			$this->oldcopy = dol_clone($this);
+			dol_syslog("this->oldcopy should have been set by the caller of update (here properties were already modified)", LOG_WARNING);
+			$this->oldcopy = dol_clone($this, 2);
 		}
 
 		$this->db->begin();

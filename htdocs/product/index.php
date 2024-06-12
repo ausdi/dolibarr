@@ -104,7 +104,7 @@ if ((GETPOSTISSET("type") && GETPOST("type") == '1') || !isModEnabled("product")
 	$helpurl = 'EN:Module_Services_En|FR:Module_Services|ES:M&oacute;dulo_Servicios';
 }
 
-llxHeader("", $langs->trans("ProductsAndServices"), $helpurl);
+llxHeader("", $langs->trans("ProductsAndServices"), $helpurl, '', 0, 0, '', '', '', 'mod-product page-index');
 
 print load_fiche_titre($transAreaType, $resultboxes['selectboxlist'], 'product');
 
@@ -543,6 +543,7 @@ if (isModEnabled('product')) {
 	$sql .= $db->plimit($max, 0);
 
 	dol_syslog("Index:list stock movements", LOG_DEBUG);
+
 	$resql = $db->query($sql);
 	if ($resql) {
 		$num = $db->num_rows($resql);
@@ -621,6 +622,14 @@ if (isModEnabled('product')) {
 			$i++;
 		}
 		$db->free($resql);
+
+		if (empty($num)) {
+			$colspan = 4;
+			if (isModEnabled('productbatch')) {
+				$colspan++;
+			}
+			print '<tr><td colspan="'.$colspan.'"><span class="opacitymedium">'.$langs->trans("None").'</span></td></tr>';
+		}
 
 		$latestmovement .= "</table>";
 		$latestmovement .= '</div>';

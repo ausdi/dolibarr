@@ -4,6 +4,7 @@
  * Copyright (C) 2022-2023  Udo Tamm            <dev@dolibit.de>
  * Copyright (C) 2023       Alexandre Spangaro  <aspangaro@easya.solutions>
  * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
+ * Copyright (C) 2024       Frédéric France             <frederic.france@free.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -241,7 +242,7 @@ $formcategory = new FormCategory($db);
 // Page Header
 $help_url = 'EN:Module_Ticket|FR:Module_Ticket_FR';
 $page_name = 'TicketSetup';
-llxHeader('', $langs->trans($page_name), $help_url);
+llxHeader('', $langs->trans($page_name), $help_url, '', 0, 0, '', '', '', 'mod-admin page-ticket');
 
 // Subheader
 $linkback = '<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
@@ -381,7 +382,9 @@ if ($resql) {
 	$num_rows = $db->num_rows($resql);
 	while ($i < $num_rows) {
 		$array = $db->fetch_array($resql);
-		array_push($def, $array[0]);
+		if (is_array($array)) {
+			array_push($def, $array[0]);
+		}
 		$i++;
 	}
 } else {

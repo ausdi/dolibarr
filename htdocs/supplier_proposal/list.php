@@ -1031,7 +1031,7 @@ if ($resql) {
 			// TODO Use a cache on user
 			$userstatic->fetch($obj->fk_user_author);
 			$objectstatic->delivery_date = $obj->dp;
-			print $objectstatic->getKanbanView('', array('thirdparty' => $companystatic, 'userauthor' => $userstatic, 'selected' => in_array($obj->id, $arrayofselected)));
+			print $objectstatic->getKanbanView('', array('thirdparty' => $companystatic, 'userauthor' => $userstatic, 'selected' => in_array($obj->rowid, $arrayofselected)));
 			if ($i == ($imaxinloop - 1)) {
 				print '</div>';
 				print '</td></tr>';
@@ -1254,11 +1254,9 @@ if ($resql) {
 
 			// Author
 			if (!empty($arrayfields['u.login']['checked'])) {
-				print '<td class="center">';
+				print '<td class="tdoverflowmax125">';
 				if ($userstatic->id > 0) {
 					print $userstatic->getNomUrl(-1, '', 0, 0, 24, 1, 'login', '', 1);
-				} else {
-					print '&nbsp;';
 				}
 				print "</td>\n";
 				if (!$i) {

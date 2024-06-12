@@ -14,7 +14,7 @@
  * Copyright (C) 2013       Cédric Salvador         <csalvador@gpcsolutions.fr>
  * Copyright (C) 2014-2024  Ferran Marcet           <fmarcet@2byte.es>
  * Copyright (C) 2015-2016  Marcos García           <marcosgdf@gmail.com>
- * Copyright (C) 2018-2023  Frédéric France         <frederic.france@netlogic.fr>
+ * Copyright (C) 2018-2024  Frédéric France         <frederic.france@free.fr>
  * Copyright (C) 2022       Gauthier VERDOL         <gauthier.verdol@atm-consulting.fr>
  * Copyright (C) 2023		Nick Fragoulis
  * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
@@ -222,7 +222,7 @@ if (empty($reshook)) {
 		if (!($socid > 0)) {
 			setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('IdThirdParty')), null, 'errors');
 		} else {
-			$objectutil = dol_clone($object, 1); // To avoid to denaturate loaded object when setting some properties for clone. We use native clone to keep this->db valid.
+			$objectutil = dol_clone($object, 1); // We use a clone to avoid to denaturate loaded object when setting some properties for clone. We use native clone to keep this->db valid.
 			'@phan-var-force Facture $objectutil';
 
 			$objectutil->date = dol_mktime(12, 0, 0, GETPOSTINT('newdatemonth'), GETPOSTINT('newdateday'), GETPOSTINT('newdateyear'));
@@ -2084,7 +2084,16 @@ if (empty($reshook)) {
 			$_GET["originid"] = $_POST["originid"]; // Keep GET and POST here ?
 			setEventMessages($object->error, $object->errors, 'errors');
 		}
-	} elseif ($action == 'addline' && GETPOST('submitforalllines', 'alpha') && GETPOST('vatforalllines', 'alpha') !== '') {
+	} elseif ($action == 'addline' && GETPOST('submitforalllines', 'aZ09') && (GETPOST('alldate_start', 'alpha') || GETPOST('alldate_end', 'alpha')) && $usercancreate) {
+		// Define date start and date end for all line
+		$alldate_start = dol_mktime(GETPOST('alldate_starthour'), GETPOST('alldate_startmin'), 0, GETPOST('alldate_startmonth'), GETPOST('alldate_startday'), GETPOST('alldate_startyear'));
+		$alldate_end = dol_mktime(GETPOST('alldate_endhour'), GETPOST('alldate_endmin'), 0, GETPOST('alldate_endmonth'), GETPOST('alldate_endday'), GETPOST('alldate_endyear'));
+		foreach ($object->lines as $line) {
+			if ($line->product_type == 1) { // only service line
+				$result = $object->updateline($line->id, $line->desc, $line->subprice, $line->qty, $line->remise_percent, $alldate_start, $alldate_end, $line->tva_tx, $line->localtax1_tx, $line->localtax2_tx, 'HT', $line->info_bits, $line->product_type, $line->fk_parent_line, 0, $line->fk_fournprice, $line->pa_ht, $line->label, $line->special_code, $line->array_options, $line->situation_percent, $line->fk_unit, $line->multicurrency_subprice);
+			}
+		}
+	} elseif ($action == 'addline' && GETPOST('submitforalllines', 'alpha') && GETPOST('vatforalllines', 'alpha') !== '' && $usercancreate) {
 		// Define vat_rate
 		$vat_rate = (GETPOST('vatforalllines') ? GETPOST('vatforalllines') : 0);
 		$vat_rate = str_replace('*', '', $vat_rate);
@@ -2098,9 +2107,13 @@ if (empty($reshook)) {
 		$remise_percent = (GETPOST('remiseforalllines') ? GETPOST('remiseforalllines') : 0);
 		$remise_percent = str_replace('*', '', $remise_percent);
 		foreach ($object->lines as $line) {
-			$result = $object->updateline($line->id, $line->desc, $line->subprice, $line->qty, $remise_percent, $line->date_start, $line->date_end, $line->tva_tx, $line->localtax1_tx, $line->localtax2_tx, 'HT', $line->info_bits, $line->product_type, $line->fk_parent_line, 0, $line->fk_fournprice, $line->pa_ht, $line->label, $line->special_code, $line->array_options, $line->situation_percent, $line->fk_unit, $line->multicurrency_subprice);
+			$tvatx= $line->tva_tx;
+			if (!empty($line->vat_src_code)) {
+				$tvatx .= ' ('.$line->vat_src_code.')';
+			}
+			$result = $object->updateline($line->id, $line->desc, $line->subprice, $line->qty, $remise_percent, $line->date_start, $line->date_end, $tvatx, $line->localtax1_tx, $line->localtax2_tx, 'HT', $line->info_bits, $line->product_type, $line->fk_parent_line, 0, $line->fk_fournprice, $line->pa_ht, $line->label, $line->special_code, $line->array_options, $line->situation_percent, $line->fk_unit, $line->multicurrency_subprice);
 		}
-	} elseif ($action == 'addline' && $usercancreate) {		// Add a new line
+	} elseif ($action == 'addline' && !GETPOST('submitforalllines', 'alpha') && !GETPOST('submitforallmargins', 'alpha') && $usercancreate) {		// Add a new line
 		$langs->load('errors');
 		$error = 0;
 
@@ -5935,7 +5948,7 @@ if ($action == 'create') {
 			// Clone
 			if (($object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_DEPOSIT || $object->type == Facture::TYPE_PROFORMA) && $usercancreate) {
 				unset($params['attr']['title']);
-				print dolGetButtonAction($langs->trans('ToClone'), '', 'default', $_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;action=clone&amp;object=invoice', '', true, $params);
+				print dolGetButtonAction($langs->trans('ToClone'), '', 'default', $_SERVER['PHP_SELF'].'?facid='.$object->id.'&action=clone&object=invoice&token='.newToken(), '', true, $params);
 			}
 
 			// Clone as predefined / Create template
@@ -6057,17 +6070,11 @@ if ($action == 'create') {
 		}
 		$somethingshown = $form->showLinkedObjectBlock($object, $linktoelem, $compatibleImportElementsList);
 
-
 		// Show online payment link
-		$useonlinepayment = (isModEnabled('paypal') || isModEnabled('stripe') || isModEnabled('paybox'));
-
-		$parameters = array();
-		$reshook = $hookmanager->executeHooks('doShowOnlinePaymentUrl', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
-		if ($reshook > 0) {
-			if (isset($hookmanager->resArray['showonlinepaymenturl'])) {
-				$useonlinepayment = $hookmanager->resArray['showonlinepaymenturl'];
-			}
-		}
+		// The list can be complete by the hook 'doValidatePayment' executed inside getValidOnlinePaymentMethods()
+		include_once DOL_DOCUMENT_ROOT.'/core/lib/payments.lib.php';
+		$validpaymentmethod = getValidOnlinePaymentMethods('');
+		$useonlinepayment = count($validpaymentmethod);
 
 		if ($object->status != Facture::STATUS_DRAFT && $useonlinepayment) {
 			print '<br><!-- Link to pay -->'."\n";

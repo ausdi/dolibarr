@@ -11,9 +11,9 @@
  * Copyright (C) 2014-2015 Marcos García        <marcosgdf@gmail.com>
  * Copyright (C) 2018      Nicolas ZABOURI	    <info@inovea-conseil.com>
  * Copyright (C) 2016-2022 Ferran Marcet        <fmarcet@2byte.es>
- * Copyright (C) 2021-2024  Frédéric France      <frederic.france@free.fr>
- * Copyright (C) 2022      Gauthier VERDOL      <gauthier.verdol@atm-consulting.fr>
- * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
+ * Copyright (C) 2021-2024  Frédéric France         <frederic.france@free.fr>
+ * Copyright (C) 2022       Gauthier VERDOL         <gauthier.verdol@atm-consulting.fr>
+ * Copyright (C) 2024		MDW						<mdeweerd@users.noreply.github.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 
 /**
  *  \file       htdocs/commande/class/commande.class.php
- *  \ingroup    commande
+ *  \ingroup    order
  *  \brief      class for orders
  */
 
@@ -77,17 +77,6 @@ class Commande extends CommonOrder
 	 * @var string String with name of icon for commande class. Here is object_order.png
 	 */
 	public $picto = 'order';
-
-	/**
-	 * @var int<0,1>|string  	Does this object support multicompany module ?
-	 * 							0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table (example 'fk_soc@societe')
-	 */
-	public $ismultientitymanaged = 1;
-
-	/**
-	 * @var int  Does object support extrafields ? 0=No, 1=Yes
-	 */
-	public $isextrafieldmanaged = 1;
 
 	/**
 	 * 0=Default, 1=View may be restricted to sales representative only if no permission to see all or to company of external user if external user
@@ -390,6 +379,9 @@ class Commande extends CommonOrder
 	public function __construct($db)
 	{
 		$this->db = $db;
+
+		$this->ismultientitymanaged = 1;
+		$this->isextrafieldmanaged = 1;
 	}
 
 	/**
@@ -1713,6 +1705,7 @@ class Commande extends CommonOrder
 
 				if ($result > 0) {
 					$this->db->commit();
+					$this->lines[] = $this->line;
 					return $this->line->id;
 				} else {
 					$this->db->rollback();
@@ -3239,7 +3232,7 @@ class Commande extends CommonOrder
 			$this->line->localtax1_type = empty($localtaxes_type[0]) ? '' : $localtaxes_type[0];
 			$this->line->localtax2_type = empty($localtaxes_type[2]) ? '' : $localtaxes_type[2];
 			$this->line->remise_percent = $remise_percent;
-			$this->line->subprice       = $subprice;
+			$this->line->subprice       = $pu_ht;
 			$this->line->info_bits      = $info_bits;
 			$this->line->special_code   = $special_code;
 			$this->line->total_ht       = $total_ht;
@@ -3764,7 +3757,7 @@ class Commande extends CommonOrder
 				$langs->load('project');
 				if (empty($this->project)) {
 					$res = $this->fetch_project();
-					if ($res > 0 && $this->project instanceof Project) {
+					if ($res > 0 && !empty($this->project) && $this->project instanceof Project) {
 						$datas['project'] = '<br><b>'.$langs->trans('Project').':</b> '.$this->project->getNomUrl(1, '', 0, 1);
 					}
 				}

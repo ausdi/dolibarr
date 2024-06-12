@@ -40,7 +40,7 @@ include_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
 include_once DOL_DOCUMENT_ROOT.'/core/lib/project.lib.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array("ticket", "companies", "other", "projects"));
+$langs->loadLangs(array("ticket", "companies", "other", "projects", "contracts"));
 
 // Get parameters
 $action     = GETPOST('action', 'aZ09') ? GETPOST('action', 'aZ09') : 'view'; // The action 'add', 'create', 'edit', 'update', 'view', ...
@@ -408,7 +408,7 @@ foreach ($search as $key => $val) {
 			$sql .= natural_search($key, implode(',', $newarrayofstatus), 2);
 		}
 		continue;
-	} elseif ($key == 'fk_user_assign' || $key == 'fk_user_create' || $key == 'fk_project') {
+	} elseif ($key == 'fk_user_assign' || $key == 'fk_user_create' || $key == 'fk_project' || $key == 'fk_contract') {
 		if ($search[$key] > 0) {
 			$sql .= natural_search($key, $search[$key], 2);
 		}
@@ -520,7 +520,7 @@ if ($num == 1 && getDolGlobalString('MAIN_SEARCH_DIRECT_OPEN_IF_ONLY_ONE') && $s
 // Output page
 // --------------------------------------------------------------------
 
-llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss, '', 'bodyforlist');
+llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss, '', 'mod-ticket page-list bodyforlist');
 
 if ($socid && !$projectid && !$project_ref && $user->hasRight('societe', 'lire')) {
 	$socstat = new Societe($db);
@@ -573,6 +573,8 @@ if ($socid && !$projectid && !$project_ref && $user->hasRight('societe', 'lire')
 		print '</table>';
 		print '</div>';
 		print dol_get_fiche_end();
+
+		print '<br>';
 	}
 }
 
@@ -636,6 +638,8 @@ if ($projectid > 0 || $project_ref) {
 		print '</div>';
 		print dol_get_fiche_end();
 
+		print '<br>';
+
 		$object = $savobject;
 	} else {
 		print "ErrorRecordNotFound";
@@ -675,7 +679,7 @@ if ($optioncss != '') {
 // Add $param from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 // Add $param from hooks
-$parameters = array();
+$parameters = array('param' => &$param);
 $reshook = $hookmanager->executeHooks('printFieldListSearchParam', $parameters, $object); // Note that $action and $object may have been modified by hook
 $param .= $hookmanager->resPrint;
 if ($socid > 0) {

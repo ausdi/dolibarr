@@ -60,12 +60,6 @@ class ActionComm extends CommonObject
 	public $picto = 'action';
 
 	/**
-	 * @var int<0,1>|string  	Does this object support multicompany module ?
-	 * 							0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table (example 'fk_soc@societe')
-	 */
-	public $ismultientitymanaged = 1;
-
-	/**
 	 * @var int<0,2> 0=Default
 	 *               1=View may be restricted to sales representative only if no permission to see all or to company of external user if external user
 	 *               2=Same than 1 but accept record if fksoc is empty
@@ -125,12 +119,6 @@ class ActionComm extends CommonObject
 	 * @var string Agenda event label
 	 */
 	public $label;
-
-	/**
-	 * @var string Agenda event label
-	 * @deprecated Use $label
-	 */
-	private $libelle;
 
 	/**
 	 * @var int Date creation record (datec)
@@ -414,20 +402,6 @@ class ActionComm extends CommonObject
 
 	public $fields = array();
 
-
-	/**
-	 * Provide list of deprecated properties and replacements
-	 *
-	 * @return array<string,string>  Old property to new property mapping
-	 */
-	protected function deprecatedProperties()
-	{
-		return array(
-			'libelle' => 'label',
-		) + parent::deprecatedProperties();
-	}
-
-
 	/**
 	 *      Constructor
 	 *
@@ -436,6 +410,8 @@ class ActionComm extends CommonObject
 	public function __construct(DoliDB $db)
 	{
 		$this->db = $db;
+
+		$this->ismultientitymanaged = 1;
 	}
 
 	/**
@@ -1142,8 +1118,6 @@ class ActionComm extends CommonObject
 	 */
 	public function update(User $user, $notrigger = 0)
 	{
-		global $langs, $conf, $hookmanager;
-
 		$error = 0;
 
 		// Clean parameters
@@ -1280,7 +1254,7 @@ class ActionComm extends CommonObject
 
 				if (!empty($this->socpeopleassigned)) {
 					$already_inserted = array();
-					foreach (array_keys($this->socpeopleassigned) as $key => $val) {
+					foreach ($this->socpeopleassigned as $val) {
 						if (!is_array($val)) {	// For backward compatibility when val=id
 							$val = array('id' => $val);
 						}
@@ -1328,7 +1302,7 @@ class ActionComm extends CommonObject
 
 	/**
 	 *  Load all objects with filters.
-	 *  @todo WARNING: This make a fetch on all records instead of making one request with a join.
+	 *  @TODO WARNING: This make a fetch on all records instead of making one request with a join.
 	 *
 	 *  @param		int		$socid			Filter by thirdparty
 	 *  @param		int		$fk_element		Id of element action is linked to
@@ -1341,7 +1315,7 @@ class ActionComm extends CommonObject
 	 */
 	public function getActions($socid = 0, $fk_element = 0, $elementtype = '', $filter = '', $sortfield = 'a.datep', $sortorder = 'DESC', $limit = 0)
 	{
-		global $conf, $langs, $hookmanager;
+		global $hookmanager;
 
 		$resarray = array();
 
@@ -1589,7 +1563,7 @@ class ActionComm extends CommonObject
 
 		$statusType = 'status9';
 		if ($percent == -1 && !$hidenastatus) {
-			$statusType = 'status9';  // @phan-suppress-current-line PhanPluginRedundantAssignment
+			$statusType = 'status9';
 		}
 		if ($percent == 0) {
 			$statusType = 'status1';
@@ -1966,13 +1940,13 @@ class ActionComm extends CommonObject
 	/**
 	 * Export events from database into a cal file.
 	 *
-	 * @param string    $format         The format of the export 'vcal', 'ical/ics' or 'rss'
-	 * @param string    $type           The type of the export 'event' or 'journal'
-	 * @param integer   $cachedelay     Do not rebuild file if date older than cachedelay seconds
-	 * @param string    $filename       The name for the exported file.
-	 * @param array<string,int|string>	$filters	Array of filters. Example array('notolderthan'=>99, 'year'=>..., 'idfrom'=>..., 'notactiontype'=>'systemauto', 'project'=>123, ...)
-	 * @param int<0,1>  $exportholiday  0 = don't integrate holidays into the export, 1 = integrate holidays into the export
-	 * @return int<-1,1>                -1 = error on build export file, 0 = export okay
+	 * @param string    $format         			The format of the export 'vcal', 'ical/ics' or 'rss'
+	 * @param string    $type           			The type of the export 'event' or 'journal'
+	 * @param integer   $cachedelay     			Do not rebuild file if date older than cachedelay seconds
+	 * @param string    $filename       			The name for the exported file.
+	 * @param array<string,int|string>	$filters	Array of filters. Example array('notolderthan'=>99, 'year'=>..., 'idfrom'=>..., 'actiontype'=>'systemauto', 'actioncode'=>'AC_PRODUCT_MODIFY', 'project'=>123, ...)
+	 * @param int<0,1>  $exportholiday  			0 = don't integrate holidays into the export, 1 = integrate holidays into the export
+	 * @return int<-1,1>                			-1 = error on build export file, 0 = export okay
 	 */
 	public function build_exportfile($format, $type, $cachedelay, $filename, $filters, $exportholiday = 0)
 	{
@@ -2028,7 +2002,7 @@ class ActionComm extends CommonObject
 			// Build event array
 			$eventarray = array();
 
-			if ($filters['module'] == 'project@eventorganization') {
+			if (!empty($filters['module']) && $filters['module'] == 'project@eventorganization') {
 				$sql = "SELECT p.rowid as id,";
 				$sql .= " p.date_start_event as datep,"; // Start
 				$sql .= " p.date_end_event as datep2,"; // End
@@ -2075,7 +2049,10 @@ class ActionComm extends CommonObject
 					if ($key == 'status') {
 						$sql .= " AND p.fk_statut = ".((int) $value);
 					}
+					// TODO Add filters on event code of meetings/talks only
 				}
+
+				$sql .= " ORDER by date_start_event";
 
 				$eventorganization = 'project';
 			} else {
@@ -2103,7 +2080,7 @@ class ActionComm extends CommonObject
 				$sql .= $hookmanager->resPrint;
 
 				// We must filter on assignment table
-				if ($filters['logint']) {
+				if (!empty($filters['logint']) && $filters['logint']) {
 					$sql .= ", ".MAIN_DB_PREFIX."actioncomm_resources as ar";
 				}
 				$sql .= " WHERE a.fk_action = c.id";
@@ -2128,12 +2105,46 @@ class ActionComm extends CommonObject
 					if ($key == 'project') {
 						$sql .= " AND a.fk_project = ".(is_numeric($value) ? $value : 0);
 					}
-					if ($key == 'actiontype') {
-						$sql .= " AND c.type = '".$this->db->escape($value)."'";
-					}
-					if ($key == 'notactiontype') {
+					if ($key == 'notactiontype') {	// deprecated
 						$sql .= " AND c.type <> '".$this->db->escape($value)."'";
 					}
+					if ($key == 'actiontype') {	// 'system', 'systemauto', 'module', ...
+						$newvalue = $value;
+						$usenotin = 0;
+						if (preg_match('/^!/', $newvalue)) {
+							$newvalue = preg_replace('/^!/', '', $value);
+							$usenotin = 1;
+						}
+						$arraynewvalue = explode(',', $newvalue);
+						$newvalue = "";
+						foreach ($arraynewvalue as $tmpval) {
+							$newvalue .= ($newvalue ? "," : "")."'".$tmpval."'";
+						}
+						if ($usenotin) {
+							$sql .= " AND c.type NOT IN (".$this->db->sanitize($newvalue, 1).")";
+						} else {
+							$sql .= " AND c.type IN (".$this->db->sanitize($newvalue, 1).")";
+						}
+					}
+					if ($key == 'actioncode') {	// 'AC_COMPANY_CREATE', 'AC_COMPANY_MODIFY', ...
+						$newvalue = $value;
+						$usenotin = 0;
+						if (preg_match('/^!/', $newvalue)) {
+							$newvalue = preg_replace('/^!/', '', $value);
+							$usenotin = 1;
+						}
+						$arraynewvalue = explode(',', $newvalue);
+						$newvalue = "";
+						foreach ($arraynewvalue as $tmpval) {
+							$newvalue .= ($newvalue ? "," : "")."'".$tmpval."'";
+						}
+						if ($usenotin) {
+							$sql .= " AND a.code NOT IN (".$this->db->sanitize($newvalue, 1).")";
+						} else {
+							$sql .= " AND a.code IN (".$this->db->sanitize($newvalue, 1).")";
+						}
+					}
+
 					// We must filter on assignment table
 					if ($key == 'logint') {
 						$sql .= " AND ar.fk_actioncomm = a.id AND ar.element_type='user'";
@@ -2187,6 +2198,11 @@ class ActionComm extends CommonObject
 
 				$sql .= " ORDER by datep";
 			}
+
+			if (!empty($filters['limit'])) {
+				$sql .= $this->db->plimit((int) $filters['limit']);
+			}
+
 			//print $sql;exit;
 
 			dol_syslog(get_class($this)."::build_exportfile select event(s)", LOG_DEBUG);

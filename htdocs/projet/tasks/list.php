@@ -265,9 +265,6 @@ if (empty($search_projectstatus) && $search_projectstatus == '') {
 	$search_projectstatus = 1;
 }
 
-
-
-
 /*
  * View
  */
@@ -705,7 +702,7 @@ foreach ($searchCategoryCustomerList as $searchCategoryCustomer) {
 // Add $param from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 // Add $param from hooks
-$parameters = array();
+$parameters = array('param' => &$param);
 $reshook = $hookmanager->executeHooks('printFieldListSearchParam', $parameters, $object); // Note that $action and $object may have been modified by hook
 $param .= $hookmanager->resPrint;
 
@@ -818,7 +815,7 @@ if (getDolGlobalString('MAIN_SEARCH_CATEGORY_CUSTOMER_ON_TASK_LIST') && isModEna
 	$moreforfilter .= '<div class="divsearchfield">';
 	$tmptitle = $langs->transnoentities('CustomersProspectsCategoriesShort');
 	$moreforfilter .= img_picto($tmptitle, 'category', 'class="pictofixedwidth"');
-	$categoriesArr = $form->select_all_categories(Categorie::TYPE_CUSTOMER, '', '', 64, 0, 1);
+	$categoriesArr = $form->select_all_categories(Categorie::TYPE_CUSTOMER, '', '', 64, 0, 3);
 	$categoriesArr[-2] = '- '.$langs->trans('NotCategorized').' -';
 	$moreforfilter .= Form::multiselectarray('search_category_customer_list', $categoriesArr, $searchCategoryCustomerList, 0, 0, 'minwidth300', 0, 0, '', 'category', $tmptitle);
 	$moreforfilter .= ' <input type="checkbox" class="valignmiddle" id="search_category_customer_operator" name="search_category_customer_operator" value="1"'.($searchCategoryCustomerOperator == 1 ? ' checked="checked"' : '').'/>';
@@ -837,7 +834,8 @@ if (!empty($moreforfilter)) {
 }
 
 $varpage = empty($contextpage) ? $_SERVER["PHP_SELF"] : $contextpage;
-$selectedfields = ($mode != 'kanban' ? $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage, getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) : ''); // This also change content of $arrayfields
+$htmlofselectarray = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage, getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN'));  // This also change content of $arrayfields with user setup
+$selectedfields = ($mode != 'kanban' ? $htmlofselectarray : '');
 $selectedfields .= (count($arrayofmassactions) ? $form->showCheckAddButtons('checkforselect', 1) : '');
 
 print '<div class="div-table-responsive">'; // You can use div-table-responsive-no-min if you don't need reserved height for your table
@@ -986,6 +984,7 @@ print '</tr>'."\n";
 
 $totalarray = array(
 	'nbfield' => 0,
+	'type' => [],
 	'val' => array(
 		't.planned_workload' => 0,
 		't.duration_effective' => 0,
@@ -999,8 +998,10 @@ $totalarray = array(
 	'totalbilledfield' => 0,
 	'totalbudget_amountfield' => 0,
 	'totalbudgetamount' => 0,
+	'totalbudget' => 0,
 	'totaltobill' => 0,
 	'totalbilled' => 0,
+	'totalizable' => [],
 );
 
 // Fields title label

@@ -75,12 +75,6 @@ class CommandeFournisseur extends CommonOrder
 	public $picto = 'supplier_order';
 
 	/**
-	 * @var int<0,1>|string  	Does this object support multicompany module ?
-	 * 							0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table (example 'fk_soc@societe')
-	 */
-	public $ismultientitymanaged = 1;
-
-	/**
 	 * 0=Default, 1=View may be restricted to sales representative only if no permission to see all or to company of external user if external user
 	 * @var integer
 	 */
@@ -121,16 +115,6 @@ class CommandeFournisseur extends CommonOrder
 	//									                            -> 6=Canceled -> (reopen) 2=Approved
 	//  		                                      -> 9=Refused  -> (reopen) 1=Validated
 	//  Note: billed or not is on another field "billed"
-
-	/**
-	 * @var array List of status
-	 */
-	public $labelStatus;
-
-	/**
-	 * @var array List of status short
-	 */
-	public $labelStatusShort;
 
 	public $billed;
 
@@ -464,6 +448,8 @@ class CommandeFournisseur extends CommonOrder
 	public function __construct($db)
 	{
 		$this->db = $db;
+
+		$this->ismultientitymanaged = 1;
 	}
 
 
@@ -1361,7 +1347,7 @@ class CommandeFournisseur extends CommonOrder
 			$sql .= " WHERE rowid = ".((int) $this->id);
 
 			if ($this->db->query($sql)) {
-				$result = 0;  // @phan-suppress-current-line PhanPluginRedundantAssignment
+				$result = 0;
 
 				if ($error == 0) {
 					// Call trigger
@@ -1413,7 +1399,7 @@ class CommandeFournisseur extends CommonOrder
 			$sql .= " WHERE rowid = ".((int) $this->id);
 			dol_syslog(get_class($this)."::cancel", LOG_DEBUG);
 			if ($this->db->query($sql)) {
-				$result = 0;  // @phan-suppress-current-line PhanPluginRedundantAssignment
+				$result = 0;
 
 				// Call trigger
 				$result = $this->call_trigger('ORDER_SUPPLIER_CANCEL', $user);
@@ -1865,6 +1851,7 @@ class CommandeFournisseur extends CommonOrder
 		// Clear fields
 		$this->user_author_id     = $user->id;
 		$this->user_validation_id = 0;
+
 		$this->date               = dol_now();
 		$this->date_creation      = 0;
 		$this->date_validation    = 0;
@@ -3753,6 +3740,16 @@ class CommandeFournisseurLigne extends CommonOrderLine
 	 * @var string Name of table without prefix where object is stored
 	 */
 	public $table_element = 'commande_fournisseurdet';
+
+	/**
+	 * @see CommonObjectLine
+	 */
+	public $parent_element = 'commande_fournisseur';
+
+	/**
+	 * @see CommonObjectLine
+	 */
+	public $fk_parent_attribute = 'fk_commande_fournisseur';
 
 	public $oldline;
 

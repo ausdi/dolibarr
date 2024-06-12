@@ -30,7 +30,7 @@
 
 /**
  *	\file       htdocs/core/modules/facture/doc/pdf_crabe.modules.php
- *	\ingroup    facture
+ *	\ingroup    invoice
  *	\brief      File of class to generate customers invoices from crabe model
  */
 
@@ -452,8 +452,14 @@ class pdf_crabe extends ModelePDFFactures
 				$qrcodestring = '';
 				if (getDolGlobalString('INVOICE_ADD_ZATCA_QR_CODE')) {
 					$qrcodestring = $object->buildZATCAQRString();
-				} elseif (getDolGlobalString('INVOICE_ADD_SWISS_QR_CODE') == '1') {
-					$qrcodestring = $object->buildSwitzerlandQRString();
+				} elseif (getDolGlobalString('INVOICE_ADD_SWISS_QR_CODE') == '1' && (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR')) {
+					if ($object->fk_account > 0 || $object->fk_bank > 0 || getDolGlobalInt('FACTURE_RIB_NUMBER')) {
+						$qrcodestring = $object->buildSwitzerlandQRString();
+					}
+				} elseif (getDolGlobalString('INVOICE_ADD_EPC_QR_CODE') == '1' && (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR')) {
+					if ($object->fk_account > 0 || $object->fk_bank > 0 || getDolGlobalInt('FACTURE_RIB_NUMBER')) {
+						$qrcodestring = $object->buildEPCQrCodeString();
+					}
 				}
 
 				if ($qrcodestring) {
@@ -468,6 +474,15 @@ class pdf_crabe extends ModelePDFFactures
 						'module_height' => 1 // height of a single module in points
 					);
 					$pdf->write2DBarcode($qrcodestring, 'QRCODE,M', $this->marge_gauche, $tab_top - 5, 25, 25, $styleQr, 'N');
+
+					if (getDolGlobalString('INVOICE_ADD_EPC_QR_CODE') == '1' && (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR')) {
+						if ($object->fk_account > 0 || $object->fk_bank > 0 || getDolGlobalInt('FACTURE_RIB_NUMBER')) {
+							$pdf->SetXY($this->marge_gauche + 30, $pdf->GetY() - 15);
+							$pdf->SetFont('', '', $default_font_size - 4);
+							$pdf->MultiCell(40, 3, $langs->transnoentitiesnoconv("INVOICE_ADD_EPC_QR_CODEPay"), 0, 'L', 0);
+						}
+					}
+
 					$extra_under_address_shift += 25;
 				}
 
@@ -1207,7 +1222,7 @@ class pdf_crabe extends ModelePDFFactures
 					require_once DOL_DOCUMENT_ROOT.'/societe/class/companybankaccount.class.php';
 					$bac = new CompanyBankAccount($this->db);
 					// @phan-suppress-next-line PhanPluginSuspiciousParamPosition
-					$bac->fetch(0, $object->thirdparty->id);
+					$bac->fetch(0, '', $object->thirdparty->id);
 					$iban = $bac->iban.(($bac->iban && $bac->bic) ? ' / ' : '').$bac->bic;
 					$lib_mode_reg .= ' '.$outputlangs->trans("PaymentTypePREdetails", dol_trunc($iban, 6, 'right', 'UTF-8', 1));
 				}
@@ -1232,23 +1247,11 @@ class pdf_crabe extends ModelePDFFactures
 			if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'CB' || $object->mode_reglement_code == 'VAD') {
 				$useonlinepayment = 0;
 				if (getDolGlobalString('PDF_SHOW_LINK_TO_ONLINE_PAYMENT')) {
-					if (isModEnabled('paypal')) {
-						$useonlinepayment++;
-					}
-					if (isModEnabled('stripe')) {
-						$useonlinepayment++;
-					}
-					if (isModEnabled('paybox')) {
-						$useonlinepayment++;
-					}
-					$parameters = array();
-					$action = '';
-					$reshook = $hookmanager->executeHooks('doShowOnlinePaymentUrl', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
-					if ($reshook > 0) {
-						if (isset($hookmanager->resArray['showonlinepaymenturl'])) {
-							$useonlinepayment += $hookmanager->resArray['showonlinepaymenturl'];
-						}
-					}
+					// Show online payment link
+					// The list can be complete by the hook 'doValidatePayment' executed inside getValidOnlinePaymentMethods()
+					include_once DOL_DOCUMENT_ROOT.'/core/lib/payments.lib.php';
+					$validpaymentmethod = getValidOnlinePaymentMethods('');
+					$useonlinepayment = count($validpaymentmethod);
 				}
 
 				if ($object->statut != Facture::STATUS_DRAFT && $useonlinepayment) {

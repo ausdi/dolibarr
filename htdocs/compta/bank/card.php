@@ -484,7 +484,7 @@ if ($action == 'create') {
 	// Tags-Categories
 	if (isModEnabled('category')) {
 		print '<tr><td>'.$langs->trans("Categories").'</td><td>';
-		$cate_arbo = $form->select_all_categories(Categorie::TYPE_ACCOUNT, '', 'parent', 64, 0, 1);
+		$cate_arbo = $form->select_all_categories(Categorie::TYPE_ACCOUNT, '', 'parent', 64, 0, 3);
 
 		$arrayselected = array();
 		$c = new Categorie($db);
@@ -503,7 +503,7 @@ if ($action == 'create') {
 	print '<td>';
 	// Editor wysiwyg
 	require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
-	$doleditor = new DolEditor('account_comment', (GETPOST("account_comment") ? GETPOST("account_comment") : $object->comment), '', 90, 'dolibarr_notes', '', false, true, getDolGlobalInt('FCKEDITOR_ENABLE_SOCIETE'), ROWS_4, '90%');
+	$doleditor = new DolEditor('account_comment', (GETPOST("account_comment") ? GETPOST("account_comment") : $object->comment), '', 90, 'dolibarr_notes', '', false, true, isModEnabled('fckeditor') && getDolGlobalInt('FCKEDITOR_ENABLE_SOCIETE'), ROWS_4, '90%');
 	$doleditor->Create();
 	print '</td></tr>';
 
@@ -781,7 +781,7 @@ if ($action == 'create') {
 		if ($object->type == Account::TYPE_SAVINGS || $object->type == Account::TYPE_CURRENT) {
 			print '<table class="border tableforfield centpercent">';
 
-			print '<tr class="liste_titre"><td class="titlefield">'.$langs->trans("BankName").'</td>';
+			print '<tr class="liste_titre"><td class="titlefieldmiddle">'.$langs->trans("BankName").'</td>';
 			print '<td>'.$object->bank.'</td></tr>';
 
 			$ibankey = FormBank::getIBANLabel($object);
@@ -797,7 +797,7 @@ if ($action == 'create') {
 				if (!checkIbanForAccount($object)) {
 					print img_picto($langs->trans("IbanNotValid"), 'warning');
 				} else {
-					print img_picto($langs->trans("IbanValid"), 'info');
+					print img_picto($langs->trans("IbanValid"), 'tick');
 				}
 			}
 			print '</td></tr>';
@@ -809,7 +809,7 @@ if ($action == 'create') {
 				if (!checkSwiftForAccount($object)) {
 					print img_picto($langs->trans("SwiftNotValid"), 'warning');
 				} else {
-					print img_picto($langs->trans("SwiftValid"), 'info');
+					print img_picto($langs->trans("SwiftValid"), 'tick');
 				}
 			}
 			print '</td></tr>';
@@ -854,7 +854,7 @@ if ($action == 'create') {
 			}
 
 			print '<tr><td>'.$langs->trans("BankAccountOwner").'</td><td>';
-			print dol_escape_htmltag($object->proprio);
+			print dol_escape_htmltag($object->owner_name);
 			print "</td></tr>\n";
 
 			print '<tr><td>'.$langs->trans("BankAccountOwnerAddress").'</td><td>';
@@ -1044,7 +1044,7 @@ if ($action == 'create') {
 		// Tags-Categories
 		if (isModEnabled('category')) {
 			print '<tr><td>'.$langs->trans("Categories").'</td><td>';
-			$cate_arbo = $form->select_all_categories(Categorie::TYPE_ACCOUNT, '', 'parent', 64, 0, 1);
+			$cate_arbo = $form->select_all_categories(Categorie::TYPE_ACCOUNT, '', 'parent', 64, 0, 3);
 
 			$arrayselected = array();
 			$c = new Categorie($db);
@@ -1063,7 +1063,7 @@ if ($action == 'create') {
 		print '<td>';
 		// Editor wysiwyg
 		require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
-		$doleditor = new DolEditor('account_comment', (GETPOST("account_comment") ? GETPOST("account_comment") : $object->comment), '', 90, 'dolibarr_notes', '', false, true, getDolGlobalInt('FCKEDITOR_ENABLE_SOCIETE'), ROWS_4, '95%');
+		$doleditor = new DolEditor('account_comment', (GETPOST("account_comment") ? GETPOST("account_comment") : $object->comment), '', 90, 'dolibarr_notes', '', false, true, isModEnabled('fckeditor') && getDolGlobalInt('FCKEDITOR_ENABLE_SOCIETE'), ROWS_4, '95%');
 		$doleditor->Create();
 		print '</td></tr>';
 
@@ -1151,19 +1151,19 @@ if ($action == 'create') {
 				$content = '';
 				if ($val == 'BankCode') {
 					$name = 'code_banque';
-					$css = 'with100';
+					$css = 'width100';
 					$content = $object->code_banque;
 				} elseif ($val == 'DeskCode') {
 					$name = 'code_guichet';
-					$css = 'with100';
+					$css = 'width100';
 					$content = $object->code_guichet;
 				} elseif ($val == 'BankAccountNumber') {
 					$name = 'number';
-					$css = 'with200';
+					$css = 'width200';
 					$content = $object->number;
 				} elseif ($val == 'BankAccountNumberKey') {
 					$name = 'cle_rib';
-					$css = 'with50';
+					$css = 'width50';
 					$content = $object->cle_rib;
 				}
 

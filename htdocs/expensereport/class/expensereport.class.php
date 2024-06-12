@@ -248,16 +248,6 @@ class ExpenseReport extends CommonObject
 	public $localtax2;	// for backward compatibility (real field should be total_localtax2 defined into CommonObject)
 
 	/**
-	 * @var array<int,string>
-	 */
-	public $labelStatus = array();
-
-	/**
-	 * @var array<int,string>
-	 */
-	public $labelStatusShort = array();
-
-	/**
 	 * Draft status
 	 */
 	const STATUS_DRAFT = 0;
@@ -1957,7 +1947,7 @@ class ExpenseReport extends CommonObject
 				$fk_project = 0;
 			}
 
-			$qty = price2num($qty);
+			$qty = (float) price2num($qty);
 			if (!preg_match('/\s*\((.*)\)/', $vatrate)) {
 				$vatrate = price2num($vatrate); // $txtva can have format '5.0 (XXX)' or '5'
 			}
@@ -2893,6 +2883,10 @@ class ExpenseReportLine extends CommonObjectLine
 	public $rowid;
 
 	public $comments;
+
+	/**
+	 * @var float Quantity
+	 */
 	public $qty;
 	public $value_unit;
 	public $date;
@@ -3064,7 +3058,7 @@ class ExpenseReportLine extends CommonObjectLine
 		if (empty($this->value_unit)) {
 			$this->value_unit = 0;
 		}
-		$this->qty = price2num($this->qty);
+		$this->qty = (float) price2num($this->qty);
 		$this->vatrate = price2num($this->vatrate);
 		if (empty($this->fk_c_exp_tax_cat)) {
 			$this->fk_c_exp_tax_cat = 0;

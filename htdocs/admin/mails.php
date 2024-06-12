@@ -177,7 +177,7 @@ if (!$server) {
 
 
 $wikihelp = 'EN:Setup_EMails|FR:Paramétrage_EMails|ES:Configuración_EMails';
-llxHeader('', $langs->trans("Setup"), $wikihelp);
+llxHeader('', $langs->trans("Setup"), $wikihelp, '', 0, 0, '', '', '', 'mod-admin page-mails');
 
 print load_fiche_titre($langs->trans("EMailsSetup"), '', 'title_setup');
 
@@ -645,7 +645,7 @@ if ($action == 'edit') {
 	print '<tr class="oddeven"><td>'.$langs->trans("MAIN_MAIL_ENABLED_USER_DEST_SELECT").'</td><td>';
 	print $form->selectyesno('MAIN_MAIL_ENABLED_USER_DEST_SELECT', getDolGlobalString('MAIN_MAIL_ENABLED_USER_DEST_SELECT'), 1);
 	print '</td></tr>';
-	//Disable autoselect to
+	// Disable autoselect to
 	print '<tr class="oddeven"><td>'.$langs->trans("MAIN_MAIL_NO_WITH_TO_SELECTED").'</td><td>';
 	print $form->selectyesno('MAIN_MAIL_NO_WITH_TO_SELECTED', getDolGlobalString('MAIN_MAIL_NO_WITH_TO_SELECTED'), 1);
 	print '</td></tr>';

@@ -1,6 +1,5 @@
 <?php
-/*
-/* Copyright (C) 2004-2017	Laurent Destailleur		<eldy@users.sourceforge.net>
+/* Copyright (C) 2004-2017	Laurent Destailleur			<eldy@users.sourceforge.net>
  * Copyright (C) 2024       Frédéric France             <frederic.france@free.fr>
  * Copyright (C) 2024		MDW							<mdeweerd@users.noreply.github.com>
  *
@@ -351,7 +350,7 @@ input, select {
 #mainbody input.button:not(.buttongen):not(.bordertransp), #mainbody a.button:not(.buttongen):not(.bordertransp) {
 	background: var(--butactionbg);
 	color: var(--textbutaction);
-	border-radius: 3px;
+	border-radius: 4px;
 	border-collapse: collapse;
 	border: none;
 }
@@ -553,6 +552,7 @@ td.rightborder {
 
 td.amount, span.amount, div.amount, b.amount {
 	color: #006666;
+	white-space: nowrap;
 }
 span.amount {
 	white-space: nowrap;
@@ -855,6 +855,9 @@ th .button {
 .quatrevingtpercentminusx {
 	width: calc(80% - 52px);
 }
+.centpercentminusx {
+	width: calc(100% - 52px);
+}
 textarea.centpercent {
 	width: 96%;
 }
@@ -874,7 +877,7 @@ textarea.centpercent {
 .h1 .small, .h1 small, .h2 .small, .h2 small, .h3 .small, .h3 small, .h4 .small, .h4 small, .h5 .small, .h5 small, .h6 .small, .h6 small, h1 .small, h1 small, h2 .small, h2 small, h3 .small, h3 small, h4 .small, h4 small, h5 .small, h5 small, h6 .small, h6 small {
 	font-weight: 400;
 	line-height: 1;
-	color: #777;
+	/* color: #777; */
 }
 
 .flip {
@@ -1023,12 +1026,6 @@ td.wordbreak img, td.wordbreakimp img {
 .marginright2 {
 	margin-<?php print $right; ?>: 2px;
 }
-.nomarginleft {
-	margin-<?php print $left; ?>: unset;
-}
-.nomarginright {
-	margin-<?php print $right; ?>: unset;
-}
 .nowidthimp {
 	width: unset !important;
 }
@@ -1084,6 +1081,14 @@ div.urllink {
 div.urllink, div.urllink a {
 	color: #339 !important;
 }
+.divsection {
+	padding: 10px;
+	border: 1px solid #DFDFDF;
+	border-radius: 10px;
+	margin-top: 5px;
+	margin-bottom: 20px;
+	/* background-color: rgba(0, 0, 0, 0.02); */
+}
 
 i.fa-mars::before, i.fa-venus::before, i.fa-genderless::before, i.fa-transgender::before  {
 	color: #888 !important;
@@ -1109,6 +1114,11 @@ i.fa-mars::before, i.fa-venus::before, i.fa-genderless::before, i.fa-transgender
 	width: 14px;
 	margin-left: 5px;
 }
+
+.linecolht {
+	white-space: nowrap;
+}
+
 
 body[class*="colorblind-"] .text-warning{
 	color : <?php print $colorblind_deuteranopes_textWarning; ?>
@@ -1156,7 +1166,8 @@ span.fa.fa-plus-circle.paddingleft {
 .asetresetmodule .fa-toggle-on, .asetresetmodule .fa-toggle-off,
 .tdwebsitesearchresult .fa-toggle-on, .tdwebsitesearchresult .fa-toggle-off
 {
-	font-size: 1.5em; vertical-align: text-bottom;
+	font-size: 1.5em;
+	vertical-align: text-bottom;
 }
 
 .divoverflow {
@@ -1263,10 +1274,14 @@ div.divsearchfield {
 	margin: 0 !important;
 	padding: 3px;
 }
+.tagsearch .tagsearchdelete {
+	height: 20px;
+}
 .tagsearch {
 	padding: 2px;
 	padding-right: 4px;
-	padding-bottom: 3px;
+	padding-top: 0px;
+	padding-bottom: 0px;
 	background: #ddd;
 	border-radius: 4px;
 	display: inline-block;
@@ -1399,7 +1414,7 @@ select.flat.selectlimit {
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
 }
-.selectlimit, .marginrightonly {
+.marginrightonly {
 	margin-<?php echo $right; ?>: 10px !important;
 }
 .marginleftonly {
@@ -1410,6 +1425,9 @@ select.flat.selectlimit {
 }
 .nomarginleft {
 	margin-<?php echo $left; ?>: 0px !important;
+}
+.nomarginright {
+	margin-<?php echo $right; ?>: 0px !important;
 }
 .marginrightonly {
 	margin-<?php echo $right; ?>: 10px !important;
@@ -1565,6 +1583,7 @@ select.flat.selectlimit {
 	-webkit-line-clamp: 2;
 	overflow: hidden;
 	height: auto !important;
+	word-break: break-word;
 }
 .tenlinesmax {
 	display: -webkit-box;
@@ -1612,6 +1631,7 @@ table.paymenttable td.amountpaymentcomplete, table.paymenttable td.amountremaint
 	white-space: nowrap;
 }
 
+
 .onlinepaymentbody .amountpaymentcomplete {
 	background-color: var(--amountpaymentcomplete);
 	color: #fff;
@@ -1644,6 +1664,9 @@ table.paymenttable td.amountpaymentcomplete, table.paymenttable td.amountremaint
 
 .fa-15 {
 	font-size: 1.5em;
+}
+.text-security {
+	-webkit-text-security: disc;
 }
 
 /* DOL_XXX for future usage (when left menu has been removed). If we do not use datatable */
@@ -1773,6 +1796,7 @@ maxscreenheightless200 {
 	.minwidth50imp  { min-width: 50px !important; }
 	.minwidth75imp  { min-width: 75px !important; }
 	.minwidth100imp { min-width: 100px !important; }
+	.minwidth150imp { min-width: 150px !important; }
 	.minwidth200imp { min-width: 200px !important; }
 	.minwidth250imp { min-width: 250px !important; }
 	.minwidth300imp { min-width: 300px !important; }
@@ -1875,10 +1899,12 @@ maxscreenheightless200 {
 select.widthcentpercentminusx, span.widthcentpercentminusx:not(.select2-selection):not(.select2-dropdown), input.widthcentpercentminusx {
 	width: calc(100% - 52px) !important;
 	display: inline-block;
+	min-width: 100px;
 }
 select.widthcentpercentminusxx, span.widthcentpercentminusxx:not(.select2-selection):not(.select2-dropdown), input.widthcentpercentminusxx {
 	width: calc(100% - 70px) !important;
 	display: inline-block;
+	min-width: 100px;
 }
 
 
@@ -1916,9 +1942,16 @@ select.widthcentpercentminusxx, span.widthcentpercentminusxx:not(.select2-select
 		min-width: 100px;
 		display: inline-block;
 	}
+
+	select.widthcentpercentminusx, span.widthcentpercentminusx:not(.select2-selection), input.widthcentpercentminusx {
+		width: calc(100% - 52px) !important;
+		display: inline-block;
+		min-width: 100px;
+	}
 	select.widthcentpercentminusxx, span.widthcentpercentminusxx:not(.select2-selection), input.widthcentpercentminusxx {
 		width: calc(100% - 70px) !important;
 		display: inline-block;
+		min-width: 100px;
 	}
 
 	input.maxwidthinputfileonsmartphone {
@@ -2029,7 +2062,7 @@ select.widthcentpercentminusxx, span.widthcentpercentminusxx:not(.select2-select
 	.minwidth200imp { min-width: 110px !important; }
 	.minwidth250imp { min-width: 115px !important; }
 	.minwidth300imp { min-width: 120px !important; }
-	.minwidth400imp { min-width: 150px !important; }
+	.minwidth400imp { min-width: 200px !important; }
 	.minwidth500imp { min-width: 250px !important; }
 	.titlefield { width: auto; min-width: unset; }
 	.titlefieldcreate { width: auto !important; }
@@ -2081,6 +2114,14 @@ select.widthcentpercentminusxx, span.widthcentpercentminusxx:not(.select2-select
 		min-width: 300px;
 	}
 }
+
+/* Force values for small screen 320 */
+@media only screen and (max-width: 320px)
+{
+	.maxwidth300 { max-width: 260px; }
+}
+
+
 .linkobject { cursor: pointer; }
 
 table.tableforfield tr:not(.liste_titre)>td:first-of-type, tr.trforfield:not(.liste_titre)>td:first-of-type, div.tableforfield div.tagtr:not(.liste_titre)>div.tagtd:first-of-type {
@@ -2336,8 +2377,8 @@ div.vmenu, td.vmenu {
 
 
 div.fiche {
-	margin-<?php print $left; ?>: <?php print(GETPOST('optioncss', 'aZ09') == 'print' ? 6 : (empty($conf->dol_optimize_smallscreen) ? '40' : '6')); ?>px;
-	margin-<?php print $right; ?>: <?php print(GETPOST('optioncss', 'aZ09') == 'print' ? 6 : (empty($conf->dol_optimize_smallscreen) ? '36' : '6')); ?>px;
+	margin-<?php print $left; ?>: <?php print(GETPOST('optioncss', 'aZ09') == 'print' ? 6 : (empty($conf->dol_optimize_smallscreen) ? '42' : '6')); ?>px;
+	margin-<?php print $right; ?>: <?php print(GETPOST('optioncss', 'aZ09') == 'print' ? 6 : (empty($conf->dol_optimize_smallscreen) ? '38' : '6')); ?>px;
 	<?php if (!empty($dol_hide_leftmenu)) {
 		print 'margin-bottom: 12px;'."\n";
 	} ?>
@@ -2366,7 +2407,7 @@ div.fichethirdleft {
 		print "float: ".$left.";\n";
 	} ?>
 	<?php if ($conf->browser->layout != 'phone') {
-		print "width: calc(50% - 14px);\n";
+		print "width: calc(50% - 16px);\n";
 	} ?>
 	<?php if ($conf->browser->layout == 'phone') {
 		print "padding-bottom: 6px;\n";
@@ -2377,7 +2418,7 @@ div.fichetwothirdright {
 		print "float: ".$right.";\n";
 	} ?>
 	<?php if ($conf->browser->layout != 'phone') {
-		print "width: calc(50% - 14px);\n";
+		print "width: calc(50% - 16px);\n";
 	} ?>
 	<?php if ($conf->browser->layout == 'phone') {
 		print "padding-bottom: 6px\n";
@@ -2388,7 +2429,7 @@ div.fichehalfleft {
 		print "float: ".$left.";\n";
 	} ?>
 	<?php if ($conf->browser->layout != 'phone') {
-		print "width: calc(50% - 14px);\n";
+		print "width: calc(50% - 16px);\n";
 	} ?>
 }
 div.fichehalfright {
@@ -2396,7 +2437,7 @@ div.fichehalfright {
 		print "float: ".$right.";\n";
 	} ?>
 	<?php if ($conf->browser->layout != 'phone') {
-		print "width: calc(50% - 14px);\n";
+		print "width: calc(50% - 16px);\n";
 	} ?>
 }
 div.fichehalfright {
@@ -3385,7 +3426,7 @@ a.vmenu:link, a.vmenu:visited, a.vmenu:hover, a.vmenu:active, span.vmenu, span.v
 }
 a.vmenu:link, a.vmenu:visited, a.vmenu:hover, a.vmenu:active,
 span.vmenu, span.vmenu:link, span.vmenu:visited, span.vmenu:hover, span.vmenu:active { font-weight: bold;  }	/* bold = 600, 500 is ko with Edge on 1200x960 */
-span.vmenudisabled, font.vmenudisabled  {
+span.vmenudisabled {
 	/* bold = 600, 500 is ko with Edge on 1200x960 */
 	font-family: <?php print $fontlist ?>; text-align: <?php print $left; ?>; font-weight: bold; color: #aaa; margin-left: 4px; white-space: nowrap;
 }
@@ -3914,7 +3955,7 @@ div .tdtop:not(.tagtdnote) {
 	vertical-align: top !important;
 	/*padding-top: 10px !important;
 	padding-bottom: 2px !important; */
-	padding-top: 5px !important;
+	padding-top: 7px !important;
 	padding-bottom: 0px !important;
 }
 
@@ -4020,6 +4061,8 @@ table.liste, table.noborder, table.formdoc, div.noborder {
 	border-top-style: solid;
 	margin: 0px 0px 20px 0px;
 
+	border-radius: 2px;
+
 	/*width: calc(100% - 7px);
 	border-collapse: separate !important;
 	border-spacing: 0px;
@@ -4105,12 +4148,12 @@ table.liste tr, table.noborder tr, div.noborder form {
 	min-height: 20px;
 }
 table.liste th, table.noborder th, table.noborder tr.liste_titre td, table.noborder tr.box_titre td {
-	padding: 7px 10px 7px 12px;			/* t r b l */
+	padding: 6px 10px 6px 12px;			/* t r b l */
 }
 table.liste td, table.noborder td, div.noborder form div, table.tableforservicepart1 td, table.tableforservicepart2 td {
-	padding: 8px 10px 8px 12px;			/* t r b l */
+	padding: 6px 10px 6px 12px;			/* t r b l */
 	/* line-height: 22px; This create trouble on cell login on list of last events of a contract*/
-	height: 22px;
+	height: 28px;
 }
 table.liste tr.trkanban td {
 	padding: 10px 12px 10px 12px;			/* t r b l */
@@ -4211,7 +4254,7 @@ div.pagination li {
   padding-left: 0px;
   padding-right: 0px;
   /* padding-top: 10px; */
-  padding-bottom: 5px;
+  /* padding-bottom: 5px; */
   font-size: 1.1em;
 }
 .pagination {
@@ -5968,7 +6011,9 @@ a.cke_dialog_ui_button_ok span {
 	text-shadow: none !important;
 	color: #333 !important;
 }
-
+a.cke_button, a.cke_combo_button {
+	height: 18px !important;
+}
 
 /* ============================================================================== */
 /*  ACE editor                                                                    */
@@ -6474,6 +6519,10 @@ input.select2-input {
 .select2-container .select2-selection--multiple {
 	min-height: 28px !important;
 }
+.tableforfield .select2-container .select2-selection--single {
+	height: 25px;
+}
+
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
 	margin-top: 5px !important;
 	border: none;
@@ -6789,25 +6838,33 @@ select.multiselectononeline {
 	/* width: 1px !important; */
 }
 
-@media only screen and (min-width: 767px)
+@media only screen and (min-width: 768px)
 {
 	/* CSS to have the dropdown boxes larger that the input search area */
 	.select2-container.select2-container--open:not(.graphtype) .select2-dropdown.ui-dialog {
-		min-width: 220px !important;
+		min-width: 230px !important;
 	}
 	.select2-container.select2-container--open:not(.graphtype) .select2-dropdown--below:not(.onrightofpage),
 	.select2-container.select2-container--open:not(.graphtype) .select2-dropdown--above:not(.onrightofpage) {
-		min-width: 220px !important;
+		min-width: 230px !important;
 	}
 	.onrightofpage span.select2-dropdown.ui-dialog.select2-dropdown--below,
 	.onrightofpage span.select2-dropdown.ui-dialog.select2-dropdown--above{
 		min-width: 140px !important;
+	}
+	.combolargeelem.select2-container.select2-container--open .select2-dropdown.ui-dialog {
+		min-width: 300px !important;
 	}
 
 	.select2-container--open .select2-dropdown--below {
 		border-top: 1px solid var(--inputbordercolor);
 		/* border-top: 1px solid #aaaaaa; */
 	}
+}
+
+/* must be after the other .select2-container.select2-container--open .select2-dropdown.ui-dialog */
+.limit.select2-container.select2-container--open .select2-dropdown.ui-dialog {
+	min-width: 100px !important;
 }
 
 
@@ -8174,7 +8231,7 @@ table.jPicker {
 	}
 	.badge {
 		min-width: auto;
-		font-size: 12px;
+		font-size: 0.94em;
 	}
 
 	table.table-fiche-title .col-title div.titre{
@@ -8244,6 +8301,7 @@ table.jPicker {
 		margin-top: 30px;
 	}
 }
+
 @media only screen and (max-width: 320px)
 {
 	.dropdown dd ul {

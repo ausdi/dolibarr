@@ -321,7 +321,7 @@ class CMailFile
 						$this->atleastoneimage = 1;
 						if ($this->html_images[$i]['type'] == 'cidfromdata') {
 							if (!in_array($this->html_images[$i]['fullpath'], $filename_list)) {
-								// If this file path is not already into the $filename_list, we add it.
+								// If this file path is not already into the $filename_list, we append it at end of array
 								$posindice = count($filename_list);
 								$filename_list[$posindice] = $this->html_images[$i]['fullpath'];
 								$mimetype_list[$posindice] = $this->html_images[$i]['content_type'];
@@ -345,7 +345,7 @@ class CMailFile
 			foreach ($filename_list as $i => $val) {
 				if ($filename_list[$i]) {
 					$this->atleastonefile = 1;
-					dol_syslog("CMailFile::CMailfile: filename_list[$i]=".$filename_list[$i].", mimetype_list[$i]=".$mimetype_list[$i]." mimefilename_list[$i]=".$mimefilename_list[$i]." cid_list[$i]=".$cid_list[$i], LOG_DEBUG);
+					dol_syslog("CMailFile::CMailfile: filename_list[$i]=".$filename_list[$i].", mimetype_list[$i]=".$mimetype_list[$i]." mimefilename_list[$i]=".$mimefilename_list[$i]." cid_list[$i]=".(empty($cid_list[$i]) ? '' : $cid_list[$i]), LOG_DEBUG);
 				}
 			}
 		}
@@ -384,7 +384,8 @@ class CMailFile
 			$tabto = explode(",", $to);
 			$listofemailstonotsendto = explode(',', getDolGlobalString('MAIN_MAIL_FORCE_NOT_SENDING_TO'));
 			foreach ($tabto as $key => $addrto) {
-				if (in_array($addrto, $listofemailstonotsendto)) {
+				$addrto = array_keys($this->getArrayAddress($addrto));
+				if (in_array($addrto[0], $listofemailstonotsendto)) {
 					unset($tabto[$key]);
 					$replaceto = true;
 				}
@@ -398,7 +399,8 @@ class CMailFile
 			$replacecc = false;
 			$tabcc = explode(',', $addr_cc);
 			foreach ($tabcc as $key => $cc) {
-				if (in_array($cc, $listofemailstonotsendto)) {
+				$cc = array_keys($this->getArrayAddress($cc));
+				if (in_array($cc[0], $listofemailstonotsendto)) {
 					unset($tabcc[$key]);
 					$replacecc = true;
 				}
@@ -412,7 +414,8 @@ class CMailFile
 			$replacebcc = false;
 			$tabbcc = explode(',', $addr_bcc);
 			foreach ($tabbcc as $key => $bcc) {
-				if (in_array($bcc, $listofemailstonotsendto)) {
+				$bcc = array_keys($this->getArrayAddress($bcc));
+				if (in_array($bcc[0], $listofemailstonotsendto)) {
 					unset($tabbcc[$key]);
 					$replacebcc = true;
 				}
@@ -706,6 +709,14 @@ class CMailFile
 			}
 
 			if ($this->atleastoneimage) {
+				foreach ($this->html_images as $img) {
+					// $img['fullpath'],$img['image_encoded'],$img['name'],$img['content_type'],$img['cid']
+					$attachment = Swift_Image::fromPath($img['fullpath']);
+					// embed image
+					$imgcid = $this->message->embed($attachment);
+					// replace cid by the one created by swiftmail in html message
+					$msg = str_replace("cid:".$img['cid'], $imgcid, $msg);
+				}
 				foreach ($this->images_encoded as $img) {
 					//$img['fullpath'],$img['image_encoded'],$img['name'],$img['content_type'],$img['cid']
 					$attachment = Swift_Image::fromPath($img['fullpath']);
@@ -1159,7 +1170,7 @@ class CMailFile
 					$result = $this->smtps->getErrors();	// applicative error code (not SMTP error code)
 					if (empty($this->error) && empty($result)) {
 						dol_syslog("CMailFile::sendfile: mail end success", LOG_DEBUG);
-						$res = true;  // @phan-suppress-current-line PhanPluginRedundantAssignment
+						$res = true;
 					} else {
 						if (empty($this->error)) {
 							$this->error = $result;
@@ -2180,19 +2191,18 @@ class CMailFile
 	 * Return a formatted array of address string for SMTP protocol
 	 *
 	 * @param   string      $address        Example: 'John Doe <john@doe.com>, Alan Smith <alan@smith.com>' or 'john@doe.com, alan@smith.com'
-	 * @return  array                       array of email => name
+	 * @return  array                       array(email => name)
 	 * @see getValidAddress()
 	 */
 	public static function getArrayAddress($address)
 	{
-		global $conf;
-
 		$ret = array();
 
 		$arrayaddress = explode(',', $address);
 
 		// Boucle sur chaque composant de l'address
 		foreach ($arrayaddress as $val) {
+			$regs = array();
 			if (preg_match('/^(.*)<(.*)>$/i', trim($val), $regs)) {
 				$name  = trim($regs[1]);
 				$email = trim($regs[2]);
@@ -2201,7 +2211,7 @@ class CMailFile
 				$email = trim($val);
 			}
 
-			$ret[$email] = !getDolGlobalString('MAIN_MAIL_NO_FULL_EMAIL') ? $name : null;
+			$ret[$email] = getDolGlobalString('MAIN_MAIL_NO_FULL_EMAIL') ? null : $name;
 		}
 
 		return $ret;

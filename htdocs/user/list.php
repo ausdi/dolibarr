@@ -545,7 +545,7 @@ if ($num == 1 && getDolGlobalString('MAIN_SEARCH_DIRECT_OPEN_IF_ONLY_ONE') && $s
 // Output page
 // --------------------------------------------------------------------
 
-llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss, '', 'bodyforlist');
+llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss, '', 'bodyforlist mod-product page-list');
 
 $arrayofselected = is_array($toselect) ? $toselect : array();
 
@@ -558,6 +558,9 @@ if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) {
 }
 if ($limit > 0 && $limit != $conf->liste_limit) {
 	$param .= '&amp;limit='.((int) $limit);
+}
+if ($optioncss != '') {
+	$param .= '&amp;optioncss='.urlencode($optioncss);
 }
 if ($search_all != '') {
 	$param .= '&amp;search_all='.urlencode($search_all);
@@ -603,9 +606,6 @@ if ($search_supervisor > 0) {
 }
 if ($search_status != '') {
 	$param .= "&amp;search_status=".urlencode($search_status);
-}
-if ($optioncss != '') {
-	$param .= '&amp;optioncss='.urlencode($optioncss);
 }
 if ($search_categ > 0) {
 	$param .= '&amp;search_categ='.urlencode((string) ($search_categ));
@@ -733,7 +733,8 @@ if (!empty($moreforfilter)) {
 }
 
 $varpage = empty($contextpage) ? $_SERVER["PHP_SELF"] : $contextpage;
-$selectedfields = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage, getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')); // This also change content of $arrayfields
+$htmlofselectarray = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage, getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')); // This also change content of $arrayfields
+$selectedfields = ($mode != 'kanban' ? $htmlofselectarray : '');
 $selectedfields .= (count($arrayofmassactions) ? $form->showCheckAddButtons('checkforselect', 1) : '');
 
 print '<div class="div-table-responsive">'; // You can use div-table-responsive-no-min if you don't need reserved height for your table
@@ -855,7 +856,7 @@ $totalarray['nbfield'] = 0;
 // --------------------------------------------------------------------
 print '<tr class="liste_titre">';
 if (getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) {
-	print getTitleFieldOfList(($mode != 'kanban' ? $selectedfields : ''), 0, $_SERVER["PHP_SELF"], '', '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ')."\n";
+	print getTitleFieldOfList($selectedfields, 0, $_SERVER["PHP_SELF"], '', '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ')."\n";
 	$totalarray['nbfield']++;
 }
 if (!empty($arrayfields['u.rowid']['checked'])) {
@@ -1174,18 +1175,21 @@ while ($i < $imaxinloop) {
 				$totalarray['nbfield']++;
 			}
 		}
+		// Phone mobile
 		if (!empty($arrayfields['u.user_mobile']['checked'])) {
 			print '<td class="tdoverflowmax125">'.dol_print_phone($obj->user_mobile, $obj->country_code, 0, $obj->rowid, 'AC_TEL', ' ', 'mobile')."</td>\n";
 			if (!$i) {
 				$totalarray['nbfield']++;
 			}
 		}
+		// Email
 		if (!empty($arrayfields['u.email']['checked'])) {
 			print '<td class="tdoverflowmax150">'.dol_print_email($obj->email, $obj->rowid, $obj->fk_soc, 1, 0, 0, 1)."</td>\n";
 			if (!$i) {
 				$totalarray['nbfield']++;
 			}
 		}
+		// Api key
 		if (!empty($arrayfields['u.api_key']['checked'])) {
 			$api_key = dolDecrypt($obj->api_key);
 			print '<td class="tdoverflowmax125" title="'.dol_escape_htmltag($api_key).'">';
@@ -1203,6 +1207,7 @@ while ($i < $imaxinloop) {
 				$totalarray['nbfield']++;
 			}
 		}
+		// User
 		if (!empty($arrayfields['u.fk_soc']['checked'])) {
 			print '<td class="tdoverflowmax150">';
 			if ($obj->fk_soc > 0) {
@@ -1294,14 +1299,14 @@ while ($i < $imaxinloop) {
 
 		// Date last login
 		if (!empty($arrayfields['u.datelastlogin']['checked'])) {
-			print '<td class="nowrap center">'.dol_print_date($db->jdate($obj->datelastlogin), "dayhour").'</td>';
+			print '<td class="nowraponall center">'.dol_print_date($db->jdate($obj->datelastlogin), "dayhour").'</td>';
 			if (!$i) {
 				$totalarray['nbfield']++;
 			}
 		}
 		// Date previous login
 		if (!empty($arrayfields['u.datepreviouslogin']['checked'])) {
-			print '<td class="nowrap center">'.dol_print_date($db->jdate($obj->datepreviouslogin), "dayhour").'</td>';
+			print '<td class="nowraponall center">'.dol_print_date($db->jdate($obj->datepreviouslogin), "dayhour").'</td>';
 			if (!$i) {
 				$totalarray['nbfield']++;
 			}

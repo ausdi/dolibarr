@@ -78,12 +78,6 @@ class FactureFournisseur extends CommonInvoice
 	public $picto = 'supplier_invoice';
 
 	/**
-	 * @var int<0,1>|string  	Does this object support multicompany module ?
-	 * 							0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table (example 'fk_soc@societe')
-	 */
-	public $ismultientitymanaged = 1;
-
-	/**
 	 * 0=Default, 1=View may be restricted to sales representative only if no permission to see all or to company of external user if external user
 	 * @var integer
 	 */
@@ -378,6 +372,8 @@ class FactureFournisseur extends CommonInvoice
 	public function __construct($db)
 	{
 		$this->db = $db;
+
+		$this->ismultientitymanaged = 1;
 	}
 
 	/**
@@ -3737,6 +3733,16 @@ class SupplierInvoiceLine extends CommonObjectLine
 	public $table_element = 'facture_fourn_det';
 
 	/**
+	 * @see CommonObjectLine
+	 */
+	public $parent_element = 'facture_fourn';
+
+	/**
+	 * @see CommonObjectLine
+	 */
+	public $fk_parent_attribute = 'fk_facture_fourn';
+
+	/**
 	 * @var static
 	 */
 	public $oldline;
@@ -3856,7 +3862,7 @@ class SupplierInvoiceLine extends CommonObjectLine
 
 	/**
 	 * Quantity
-	 * @var double
+	 * @var float
 	 */
 	public $qty;
 

@@ -107,6 +107,7 @@ $search_accountancy_code_sell_export = GETPOST("search_accountancy_code_sell_exp
 $search_accountancy_code_buy = GETPOST("search_accountancy_code_buy", 'alpha');
 $search_accountancy_code_buy_intra = GETPOST("search_accountancy_code_buy_intra", 'alpha');
 $search_accountancy_code_buy_export = GETPOST("search_accountancy_code_buy_export", 'alpha');
+$search_import_key = GETPOST("search_import_key", 'alpha');
 $search_finished = GETPOST("search_finished");
 $search_units = GETPOST('search_units', 'alpha');
 $type = GETPOST("type", 'alpha');
@@ -369,6 +370,7 @@ if (empty($reshook)) {
 		//$search_type='';						// There is 2 types of list: a list of product and a list of services. No list with both. So when we clear search criteria, we must keep the filter on type.
 
 		$show_childproducts = '';
+		$search_import_key = '';
 		$search_accountancy_code_sell = '';
 		$search_accountancy_code_sell_intra = '';
 		$search_accountancy_code_sell_export = '';
@@ -552,6 +554,9 @@ if ($search_default_workstation) {
 if ($search_barcode) {
 	$sql .= natural_search('p.barcode', $search_barcode);
 }
+if ($search_import_key) {
+	$sql .= natural_search('p.import_key', $search_import_key);
+}
 if (isset($search_tosell) && dol_strlen($search_tosell) > 0 && $search_tosell != -1) {
 	$sql .= " AND p.tosell = ".((int) $search_tosell);
 }
@@ -731,7 +736,7 @@ foreach ($searchCategoryProductList as $searchCategoryProduct) {
 }
 
 //llxHeader('', $title, $helpurl, '', 0, 0, array(), array(), $paramsCat, 'classforhorizontalscrolloftabs');
-llxHeader('', $title, $helpurl, '', 0, 0, array(), array(), $paramsCat, '');
+llxHeader('', $title, $helpurl, '', 0, 0, array(), array(), $paramsCat, 'mod-product page-list');
 
 $arrayofselected = is_array($toselect) ? $toselect : array();
 
@@ -770,6 +775,9 @@ if ($search_ref_supplier) {
 }
 if ($search_barcode) {
 	$param .= ($search_barcode ? "&search_barcode=".urlencode($search_barcode) : "");
+}
+if ($search_import_key) {
+	$param .= "&search_import_key=".urlencode($search_import_key);
 }
 if ($search_label) {
 	$param .= "&search_label=".urlencode($search_label);
@@ -832,7 +840,7 @@ if ($search_finished) {
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
 // Add $param from hooks
-$parameters = array();
+$parameters = array('param' => &$param);
 $reshook = $hookmanager->executeHooks('printFieldListSearchParam', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
 $param .= $hookmanager->resPrint;
 
@@ -964,7 +972,8 @@ if (!empty($moreforfilter)) {
 }
 
 $varpage = empty($contextpage) ? $_SERVER["PHP_SELF"] : $contextpage;
-$selectedfields = ($mode != 'kanban' ? $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage, getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) : ''); // This also change content of $arrayfields
+$htmlofselectarray = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage, getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN'));  // This also change content of $arrayfields with user setup
+$selectedfields = ($mode != 'kanban' ? $htmlofselectarray : '');
 $selectedfields .= (count($arrayofmassactions) ? $form->showCheckAddButtons('checkforselect', 1) : '');
 
 print '<div class="div-table-responsive">';
@@ -1242,6 +1251,7 @@ if (!empty($arrayfields['p.tms']['checked'])) {
 }
 if (!empty($arrayfields['p.import_key']['checked'])) {
 	print '<td class="liste_titre center">';
+	print '<input class="flat maxwidth75" type="text" name="search_import_key" value="'.dol_escape_htmltag($search_import_key).'">';
 	print '</td>';
 }
 if (!empty($arrayfields['p.tosell']['checked'])) {
